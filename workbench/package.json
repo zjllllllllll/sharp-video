@@ -1,0 +1,13 @@
+{
+  "name": "sharp-video-workbench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@sparkjsdev/spark": "2.2.0",
+    "three": "0.180.0"
+  }
+}

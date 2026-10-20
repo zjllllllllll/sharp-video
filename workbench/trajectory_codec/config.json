@@ -1,0 +1,16 @@
+{
+  "latent_dim": 64,
+  "hidden_dim": 256,
+  "hidden_layers": 5,
+  "w0_initial": 30.0,
+  "w0": 1.0,
+  "epochs": 20,
+  "batch_size": 65536,
+  "micro_batch_size": 65536,
+  "code_learning_rate": 0.001,
+  "network_learning_rate": 0.0001,
+  "seed": 20261019,
+  "checkpoint_epochs": 5,
+  "dtype": "float32",
+  "siren_pytorch_version": "0.1.7"
+}

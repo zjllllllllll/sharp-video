@@ -1,0 +1,11 @@
+# Install the GPU-matched torch / torchvision builds separately first.
+numpy
+scipy
+Pillow
+imageio[ffmpeg]
+opencv-python
+matplotlib
+einops
+easydict
+tqdm
+plyfile

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深度模型对比实验 · SHARP Video</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">S</span>
+      <div><strong>DEPTH EXPERIMENT</strong><span>MoGe-2 / Depth Pro 单帧点云对比</span></div>
+    </div>
+    <a class="topbar-link" href="/">返回工作台</a>
+  </header>
+  <main class="experiment-page">
+    <div class="experiment-heading">
+      <div><p>EXPERIMENT</p><h1>同一帧的深度与反投影点云</h1></div>
+      <button id="run-experiment" class="primary-action" type="button">运行实验</button>
+    </div>
+    <p id="experiment-file" class="experiment-file">正在读取当前视频…</p>
+    <section id="experiment-progress" class="experiment-progress">
+      <span class="spinner"></span><strong id="experiment-status">等待结果</strong>
+    </section>
+    <section id="source-panel" class="source-panel" hidden>
+      <img id="source-frame" alt="实验输入帧">
+      <div><span>相同 RGB 输入</span><strong id="source-label"></strong></div>
+    </section>
+    <section id="comparison" class="comparison-grid" hidden>
+      <article class="model-card">
+        <header><div><span>MODEL A</span><h2>MoGe-2 ViT-S Normal</h2></div><strong id="moge-status"></strong></header>
+        <div id="moge-viewer" class="pointcloud-viewer" tabindex="0"><span class="viewer-hint">拖动观察 · 右键平移 · 滚轮前后 · WASD / Q E</span></div>
+        <div class="model-footer"><img id="moge-depth" alt="MoGe-2 深度图"><div id="moge-metrics"></div></div>
+      </article>
+      <article class="model-card">
+        <header><div><span>MODEL B</span><h2>Depth Pro</h2></div><strong id="depthpro-status"></strong></header>
+        <div id="depthpro-viewer" class="pointcloud-viewer" tabindex="0"><span class="viewer-hint">拖动观察 · 右键平移 · 滚轮前后 · WASD / Q E</span></div>
+        <div class="model-footer"><img id="depthpro-depth" alt="Depth Pro 深度图"><div id="depthpro-metrics"></div></div>
+      </article>
+    </section>
+    <pre id="experiment-error" role="alert" hidden></pre>
+  </main>
+  <script type="module" src="/depth-experiment.js"></script>
+</body>
+</html>

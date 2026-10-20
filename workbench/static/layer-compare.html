@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>同帧 PLY · 高斯层对比</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/","@sparkjsdev/spark":"/vendor/@sparkjsdev/spark/dist/spark.module.js"}}</script>
+  <style>
+    body {min-width: 640px;}
+    .compare-header {padding: 18px 24px; border-bottom: 1px solid var(--line);}
+    .compare-header h1 {font-size: 21px;}
+    .compare-header p {margin: 10px 0 0; color: var(--muted); font-size: 13px;}
+    .compare-grid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 16px;}
+    .compare-card {min-width: 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden;}
+    .compare-card h2 {margin: 0; padding: 13px 16px; background: var(--surface); font-size: 16px;}
+    .compare-card h2 span {float: right; color: var(--muted); font-size: 12px; font-weight: normal;}
+    .compare-view {position: relative; height: calc(100vh - 185px); min-height: 350px; outline: none; background: #070908;}
+    .compare-view canvas {display: block; width: 100%; height: 100%;}
+    #compare-error {margin: 0 16px; color: var(--danger); white-space: pre-wrap;}
+  </style>
+</head>
+<body>
+  <header class="compare-header">
+    <h1>同一帧 PLY：第一层 / 完整两层</h1>
+    <p id="compare-status" role="status">正在读取原始 PLY…</p>
+    <p>两侧视角同步 · 在任一侧拖动环视、右键平移、滚轮前后 · 点击画面后使用 WASD / Q E，Shift 加速</p>
+  </header>
+  <main class="compare-grid">
+    <section class="compare-card"><h2>仅第一层 <span id="first-count"></span></h2><div id="first-view" class="compare-view" tabindex="0" aria-label="仅第一层高斯视图"></div></section>
+    <section class="compare-card"><h2>两层完整 <span id="full-count"></span></h2><div id="full-view" class="compare-view" tabindex="0" aria-label="完整两层高斯视图"></div></section>
+  </main>
+  <pre id="compare-error" role="alert" hidden></pre>
+  <script type="module" src="/layer-compare.js"></script>
+</body>
+</html>

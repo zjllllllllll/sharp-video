@@ -1,0 +1,21 @@
+[submodule "ml-sharp"]
+	path = ml-sharp
+	url = https://github.com/apple-aiml-research/ml-sharp.git
+[submodule "video-depth-anything"]
+	path = video-depth-anything
+	url = https://github.com/DepthAnything/Video-Depth-Anything.git
+[submodule "ml-depth-pro"]
+	path = ml-depth-pro
+	url = https://github.com/apple-aiml-research/ml-depth-pro.git
+[submodule "moge"]
+	path = moge
+	url = https://github.com/microsoft/MoGe.git
+[submodule "moge-utils3d"]
+	path = moge-utils3d
+	url = https://github.com/EasternJournalist/utils3d.git
+[submodule "workbench/third_party/MoDGS"]
+	path = workbench/third_party/MoDGS
+	url = https://github.com/Mobiuslqm/MoDGS.git
+[submodule "workbench/third_party/omnimotion"]
+	path = workbench/third_party/omnimotion
+	url = https://github.com/qianqianwang68/omnimotion.git

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>轨迹编码实验 · SHARP Video</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/trajectory-codec.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/","@sparkjsdev/spark":"/vendor/@sparkjsdev/spark/dist/spark.module.js"}}</script>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-mark">S</span><div><strong>TRAJECTORY CODEC</strong><span>高斯轨迹编码实验</span></div></div><a class="topbar-link" href="/">返回工作台</a></header>
+  <main class="codec-page">
+    <div class="codec-heading"><div><p>EXPERIMENT</p><h1>每条轨迹一个编码，共享属性解码器</h1></div><div class="codec-actions"><button id="start" class="primary-action" disabled>开始训练</button><button id="stop" disabled>停止并保存</button></div></div>
+    <label class="codec-file">视频 <select id="video" aria-label="选择视频"></select></label>
+    <p class="codec-note">原始第五步轨迹 · 64 维编码 · Modulated SIREN · 全部属性 · 20 轮完整数据</p>
+    <section class="codec-card" aria-live="polite"><strong id="status">正在读取任务状态…</strong><span id="progress-text"></span><progress id="progress" max="100" value="0"></progress><p id="detail"></p></section>
+    <div id="error" role="alert" hidden></div>
+    <section class="codec-card"><div id="metrics" class="codec-metrics"></div><canvas id="loss" height="180" aria-label="训练损失曲线"></canvas><p id="loss-detail" class="codec-note">训练开始后显示总损失和各属性损失。</p></section>
+    <section id="result" class="codec-card" hidden>
+      <div class="codec-heading"><h2>原始 / 重建对照</h2><div class="codec-actions"><a id="download" class="topbar-link" download>下载编码模型</a><a id="report" class="topbar-link" download hidden>下载误差报告</a><button id="load-preview">准备对照预览</button></div></div>
+      <p id="preview-status" class="codec-note">本机解码完成后可准备两组网页播放缓存。</p>
+      <div id="viewer" class="splat-viewer codec-viewer" tabindex="0" aria-label="轨迹编码对照播放器" hidden><span class="viewer-hint">左键环视 · 右键平移 · 滚轮前后 · WASD / QE 移动</span></div>
+      <div class="codec-controls"><button id="original" disabled>原始序列</button><button id="decoded" class="active" disabled>解码重建</button><button id="play" disabled>播放</button><input id="timeline" type="range" min="0" max="99" value="0" disabled aria-label="帧时间"><span id="frame">0 / 100</span><button id="reset" disabled>重置视角</button><span id="fps"></span></div>
+    </section>
+    <section id="accuracy" class="codec-card" hidden><h2>重建误差</h2><p class="codec-note">图像指标以相同渲染器下的原始高斯为参考；属性统计覆盖全部观测。</p><table><thead><tr><th>属性</th><th>平均绝对误差</th><th>P95</th><th>P99</th></tr></thead><tbody id="error-rows"></tbody></table></section>
+  </main>
+  <script type="module" src="/trajectory-codec-experiment.js"></script>
+</body></html>

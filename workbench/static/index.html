@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SHARP Video Workbench</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/","@sparkjsdev/spark":"/vendor/@sparkjsdev/spark/dist/spark.module.js"}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">S</span>
+      <div><strong>SHARP VIDEO</strong><span>开发工作台</span></div>
+    </div>
+    <div class="topbar-actions"><a class="topbar-link" href="/trajectory-codec-experiment.html">轨迹编码实验</a><a class="topbar-link" href="/depth-experiment.html">深度模型实验</a><span id="server-status" class="server-status"><i></i> 本地服务</span></div>
+  </header>
+
+  <main class="shell">
+    <aside class="pipeline">
+      <div class="section-label"><span>PIPELINE</span><span>06 / 06</span></div>
+      <nav aria-label="开发流程">
+        <button id="step-upload" class="step active" type="button">
+          <span class="step-number">01</span>
+          <span><strong>上传视频</strong><small>输入素材</small></span>
+        </button>
+        <button id="step-motion" class="step muted" type="button" disabled><span class="step-number">02</span><span><strong>机位检测</strong><small>固定 / 防抖 / 拒绝</small></span></button>
+        <button id="step-depth" class="step muted" type="button" disabled><span class="step-number">03</span><span><strong>预测深度</strong><small>视频深度估计</small></span></button>
+        <button id="step-gaussians" class="step muted" type="button" disabled><span class="step-number">04</span><span><strong>逐帧高斯</strong><small>RGB-D → PLY 序列</small></span></button>
+        <button id="step-tracks" class="step muted" type="button" disabled><span class="step-number">05</span><span><strong>高斯轨迹</strong><small>固定 ID → 三维轨迹 → 重放</small></span></button>
+        <button id="step-median" class="step muted" type="button" disabled><span class="step-number">06</span><span><strong>中值滤波</strong><small>5 帧窗口 · 全属性去噪</small></span></button>
+      </nav>
+      <p class="local-note">从视频输入到高斯轨迹滤波<br>所有文件保存在本机</p>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspace-heading">
+        <div><p id="stage-index">STEP 01</p><h1 id="stage-title">上传视频</h1></div>
+        <span id="file-meta" class="file-meta">尚未选择视频</span>
+      </div>
+
+      <section id="drop-zone" class="viewport" aria-label="视频上传区域">
+        <div id="empty-state" class="empty-state">
+          <div class="upload-symbol">＋</div>
+          <h2>拖入一个视频开始</h2>
+          <p>或从电脑中选择视频文件</p>
+          <label class="choose-button" for="video-file">选择视频</label>
+          <input id="video-file" type="file" accept="video/*,.mkv" hidden>
+        </div>
+        <video id="video-preview" controls playsinline hidden></video>
+        <div id="splat-viewer" class="splat-viewer" tabindex="0" aria-label="PLY 序列播放器" hidden>
+          <div class="viewer-hint">拖动环视 · 滚轮前后 · WASD 移动 · Q/E 升降 · Shift 加速</div>
+          <div class="viewer-controls">
+            <button id="viewer-play" type="button" aria-label="播放 PLY 序列">▶</button>
+            <input id="viewer-timeline" type="range" min="0" max="0" value="0" aria-label="PLY 序列时间轴">
+            <span id="viewer-frame">0 / 0</span>
+          </div>
+        </div>
+        <div id="track-viewer" class="splat-viewer" tabindex="0" aria-label="高斯轨迹播放器" hidden>
+          <div class="viewer-hint">拖动环视 · 滚轮前后 · WASD 移动 · Q/E 升降 · Shift 加速</div>
+          <div class="viewer-controls track-controls">
+            <button id="track-play" type="button" aria-label="播放高斯轨迹" disabled>▶</button>
+            <input id="track-timeline" type="range" min="0" max="0" value="0" step="1" aria-label="高斯轨迹时间轴" disabled>
+            <span id="track-frame">0 / 0</span>
+            <span id="track-performance" title="实际动画状态更新帧率"></span>
+          </div>
+        </div>
+        <div id="median-viewer" class="splat-viewer" tabindex="0" aria-label="中值滤波对照播放器" hidden>
+          <div class="viewer-hint">拖动环视 · 滚轮前后 · WASD 移动 · Q/E 升降</div>
+          <div class="viewer-controls track-controls">
+            <button id="median-play" type="button" aria-label="播放滤波对照" disabled>▶</button>
+            <input id="median-timeline" type="range" min="0" max="0" value="0" step="1" aria-label="滤波对照时间轴" disabled>
+            <span id="median-frame">0 / 0</span>
+            <span id="median-performance"></span>
+          </div>
+        </div>
+        <div id="median-processing" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong>正在进行中值滤波…</strong>
+          <progress id="median-progress" max="100" value="0"></progress>
+          <span id="median-percent">准备原始参数序列…</span>
+        </div>
+        <div id="uploading" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong>正在上传…</strong>
+          <progress id="upload-progress" max="100" value="0"></progress>
+          <span id="upload-percent">0%</span>
+        </div>
+        <div id="analyzing" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong>正在检测相机运动…</strong>
+          <span>分析平移、旋转与画面抖动</span>
+        </div>
+        <div id="depth-processing" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong>正在预测深度视频…</strong>
+          <span>首次运行需要加载模型，请稍候</span>
+        </div>
+        <div id="gaussian-processing" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong>正在逐帧生成 PLY…</strong>
+          <progress id="gaussian-progress" max="100" value="0"></progress>
+          <span id="gaussian-percent">准备 SHARP 模型…</span>
+        </div>
+        <div id="track-processing" class="uploading" hidden>
+          <span class="spinner"></span>
+          <strong id="track-progress-title">正在生成高斯轨迹…</strong>
+          <progress id="track-progress" max="100" value="0"></progress>
+          <span id="track-percent">准备光流与视频深度…</span>
+        </div>
+      </section>
+
+      <div class="details">
+        <p id="message">上传后会在这里直接预览视频，方便确认开发输入。</p>
+        <label id="replace-action" class="replace-button" for="video-file" hidden>更换视频</label>
+      </div>
+      <section id="analysis-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading">
+          <div><span>机位检测结果</span><strong id="analysis-result">等待检测</strong></div>
+          <div id="view-switch" class="view-switch" hidden>
+            <button id="view-original" type="button">原视频</button>
+            <button id="view-stabilized" class="active" type="button">防抖后</button>
+          </div>
+        </div>
+        <div id="motion-metrics" class="motion-metrics"></div>
+        <p id="analysis-note"></p>
+      </section>
+      <section id="depth-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading">
+          <div><span>深度预测</span><strong id="depth-result">尚未生成</strong></div>
+          <div id="depth-view-switch" class="view-switch" hidden>
+            <button id="view-depth-source" type="button">输入视频</button>
+            <button id="view-depth-map" class="active" type="button">深度视频</button>
+          </div>
+        </div>
+        <div id="depth-metrics" class="motion-metrics"></div>
+        <p id="depth-note">使用 Metric Video Depth Anything Base 生成时序一致的深度。</p>
+        <div class="depth-actions">
+          <button id="run-depth" class="primary-action" type="button">开始预测深度</button>
+          <a id="download-depth" class="replace-button" hidden>下载浮点深度 NPZ</a>
+        </div>
+      </section>
+      <section id="gaussian-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading">
+          <div><span>逐帧高斯</span><strong id="gaussian-result">尚未生成</strong></div>
+        </div>
+        <div id="gaussian-metrics" class="motion-metrics"></div>
+        <p id="gaussian-note">每帧使用对应 RGB 与公制深度调用 Apple SHARP。</p>
+        <div class="depth-actions">
+          <button id="run-gaussians" class="primary-action" type="button">开始生成 PLY 序列</button>
+          <button id="next-tracks" class="primary-action" type="button" hidden>下一步：高斯轨迹</button>
+        </div>
+      </section>
+      <section id="track-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading">
+          <div><span>高斯轨迹</span><strong id="track-result">尚未生成</strong></div>
+        </div>
+        <div id="track-metrics" class="motion-metrics"></div>
+        <p id="track-note">沿光流连接轨迹，重复保留一条，遗漏建立新轨迹；直接读取单个动画文件重放。</p>
+        <div class="depth-actions">
+          <button id="run-tracks" class="primary-action" type="button">开始生成高斯轨迹</button>
+          <button id="next-median" class="primary-action" type="button" hidden>下一步：中值滤波</button>
+        </div>
+      </section>
+      <section id="median-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading">
+          <div><span>中值滤波</span><strong id="median-result">尚未滤波</strong></div>
+          <div id="median-switch" class="view-switch" hidden>
+            <button id="median-original" type="button" disabled>原始序列</button>
+            <button id="median-filtered" class="active" type="button" disabled>中值滤波后</button>
+          </div>
+        </div>
+        <div id="median-metrics" class="motion-metrics"></div>
+        <p id="median-note">5 帧时间窗口，处理全部高斯属性。</p>
+        <div class="depth-actions">
+          <button id="median-run" class="primary-action" type="button">开始中值滤波</button>
+        </div>
+      </section>
+      <pre id="error" role="alert" hidden></pre>
+    </section>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
+

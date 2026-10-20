@@ -1,0 +1,2 @@
+siren-pytorch==0.1.7
+# Reuse .envs/dynamic: torch 2.8.0+cu128, gsplat 1.5.3, numpy, Pillow.
