@@ -26,6 +26,8 @@ workbench/runs/*
 **/*.safetensors
 **/*.onnx
 **/*.ply
+**/*.splat
+**/*.splat4d
 **/*.4dgs
 **/*.npy
 **/*.npz
