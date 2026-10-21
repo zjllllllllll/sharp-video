@@ -91,9 +91,6 @@ h2 { margin: 20px 0 7px; font-size: 18px; font-weight: 520; }
 .viewer-controls input { width: 100%; accent-color: var(--accent); }
 .viewer-controls span { color: var(--muted); font: 11px ui-monospace, monospace; text-align: right; }
 .track-controls { grid-template-columns: 38px minmax(0, 1fr) 140px 150px; }
-.analysis-panel.complete #track-result { color: var(--accent); }
-.analysis-panel.complete #median-result { color: var(--accent); }
-#median-viewer .track-controls { grid-template-columns: 38px minmax(40px, 1fr) 120px 90px; }
 .uploading { gap: 13px; background: #0b100ddd; z-index: 2; color: var(--muted); font-size: 12px; }
 .uploading strong { color: var(--text); font-size: 15px; }
 .spinner { width: 30px; height: 30px; border: 2px solid #43503f; border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
@@ -164,3 +161,6 @@ h2 { margin: 20px 0 7px; font-size: 18px; font-weight: 520; }
   .comparison-grid { grid-template-columns: 1fr; }
 }
 
+
+.sequence-controls { grid-template-columns: 38px minmax(0, 1fr) 95px 100px; }
+.analysis-panel.complete #compression-result { color: var(--accent); }

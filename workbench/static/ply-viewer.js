@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {SparkRenderer, SplatMesh} from '@sparkjsdev/spark';
+import {bindViewerControls, updateViewerMovement} from './viewer-controls.js';
 
 export class PlySequenceViewer {
   constructor(host, {onFrame, onPlayback, onBuffering, onPerformance, onError} = {}) {
@@ -53,43 +54,7 @@ export class PlySequenceViewer {
   }
 
   bindControls() {
-    this.host.addEventListener('contextmenu', event => event.preventDefault());
-    this.host.addEventListener('pointerdown', event => {
-      if (event.target.closest('.viewer-controls')) return;
-      this.drag = {x: event.clientX, y: event.clientY, button: event.button};
-      this.host.setPointerCapture(event.pointerId);
-      this.host.focus();
-    });
-    this.host.addEventListener('pointerup', () => { this.drag = null; });
-    this.host.addEventListener('pointercancel', () => { this.drag = null; });
-    this.host.addEventListener('pointermove', event => {
-      if (!this.drag) return;
-      const dx = event.clientX - this.drag.x;
-      const dy = event.clientY - this.drag.y;
-      this.drag.x = event.clientX;
-      this.drag.y = event.clientY;
-      if (this.drag.button === 2) {
-        this.camera.translateX(-dx * 0.003);
-        this.camera.translateY(dy * 0.003);
-      } else {
-        this.yaw -= dx * 0.003;
-        this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - dy * 0.003));
-        this.camera.rotation.set(this.pitch, this.yaw, 0);
-      }
-    });
-    this.host.addEventListener('wheel', event => {
-      event.preventDefault();
-      this.camera.translateZ(Math.max(-0.5, Math.min(0.5, event.deltaY * 0.002)));
-    }, {passive: false});
-    this.host.addEventListener('keydown', event => {
-      if ('wasdqeWASDQE'.includes(event.key) || event.key === 'Shift') {
-        this.keys.add(event.key);
-        event.preventDefault();
-      }
-    });
-    window.addEventListener('keyup', event => this.keys.delete(event.key));
-    window.addEventListener('blur', () => this.keys.clear());
-    this.host.addEventListener('blur', () => this.keys.clear());
+    this.unbindControls = bindViewerControls(this);
   }
 
   resize() {
@@ -201,15 +166,7 @@ export class PlySequenceViewer {
     this.lastRenderAt = now;
     if (this.host.hidden) return;
 
-    if (document.activeElement === this.host) {
-      const speed = delta * (this.keys.has('Shift') ? 3 : 1);
-      if (this.keys.has('w') || this.keys.has('W')) this.camera.translateZ(-speed);
-      if (this.keys.has('s') || this.keys.has('S')) this.camera.translateZ(speed);
-      if (this.keys.has('a') || this.keys.has('A')) this.camera.translateX(-speed);
-      if (this.keys.has('d') || this.keys.has('D')) this.camera.translateX(speed);
-      if (this.keys.has('q') || this.keys.has('Q')) this.camera.position.y -= speed;
-      if (this.keys.has('e') || this.keys.has('E')) this.camera.position.y += speed;
-    }
+    updateViewerMovement(this, delta);
 
     if (this.playing && !this.switching && !this.rendering && now >= this.nextFrameAt) {
       this.switching = true;

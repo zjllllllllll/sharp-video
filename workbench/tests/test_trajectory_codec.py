@@ -10,8 +10,8 @@ import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gaussian_animation import write_header
-from gaussian_lifecycle import make_lifecycle_header, read_lifecycle_animation
+from trajectory_codec.legacy_format import write_header
+from trajectory_codec.legacy_format import make_lifecycle_header, read_lifecycle_animation
 from trajectory_codec.data import prepare, epoch_batches
 from trajectory_codec.model import (AttributeDecoder, FORMAT, default_config, group_losses,
                                     local_times, physical_attributes, STANDARD_COLUMNS)

@@ -18,7 +18,7 @@
 
   <main class="shell">
     <aside class="pipeline">
-      <div class="section-label"><span>PIPELINE</span><span>06 / 06</span></div>
+      <div class="section-label"><span>PIPELINE</span><span>05 / 05</span></div>
       <nav aria-label="开发流程">
         <button id="step-upload" class="step active" type="button">
           <span class="step-number">01</span>
@@ -27,10 +27,9 @@
         <button id="step-motion" class="step muted" type="button" disabled><span class="step-number">02</span><span><strong>机位检测</strong><small>固定 / 防抖 / 拒绝</small></span></button>
         <button id="step-depth" class="step muted" type="button" disabled><span class="step-number">03</span><span><strong>预测深度</strong><small>视频深度估计</small></span></button>
         <button id="step-gaussians" class="step muted" type="button" disabled><span class="step-number">04</span><span><strong>逐帧高斯</strong><small>RGB-D → PLY 序列</small></span></button>
-        <button id="step-tracks" class="step muted" type="button" disabled><span class="step-number">05</span><span><strong>高斯轨迹</strong><small>固定 ID → 三维轨迹 → 重放</small></span></button>
-        <button id="step-median" class="step muted" type="button" disabled><span class="step-number">06</span><span><strong>中值滤波</strong><small>5 帧窗口 · 全属性去噪</small></span></button>
+        <button id="step-compression" class="step muted" type="button" disabled><span class="step-number">05</span><span><strong>压缩高斯</strong><small>PLY 序列 → 单文件 → 播放</small></span></button>
       </nav>
-      <p class="local-note">从视频输入到高斯轨迹滤波<br>所有文件保存在本机</p>
+      <p class="local-note">从视频输入到高斯压缩打包<br>所有文件保存在本机</p>
     </aside>
 
     <section class="workspace">
@@ -56,29 +55,20 @@
             <span id="viewer-frame">0 / 0</span>
           </div>
         </div>
-        <div id="track-viewer" class="splat-viewer" tabindex="0" aria-label="高斯轨迹播放器" hidden>
+        <div id="compression-viewer" class="splat-viewer" tabindex="0" aria-label="压缩高斯播放器" hidden>
           <div class="viewer-hint">拖动环视 · 滚轮前后 · WASD 移动 · Q/E 升降 · Shift 加速</div>
-          <div class="viewer-controls track-controls">
-            <button id="track-play" type="button" aria-label="播放高斯轨迹" disabled>▶</button>
-            <input id="track-timeline" type="range" min="0" max="0" value="0" step="1" aria-label="高斯轨迹时间轴" disabled>
-            <span id="track-frame">0 / 0</span>
-            <span id="track-performance" title="实际动画状态更新帧率"></span>
+          <div class="viewer-controls sequence-controls">
+            <button id="compression-play" type="button" aria-label="播放压缩高斯" disabled>▶</button>
+            <input id="compression-timeline" type="range" min="0" max="0" value="0" step="1" aria-label="压缩高斯时间轴" disabled>
+            <span id="compression-frame">0 / 0</span>
+            <span id="compression-performance"></span>
           </div>
         </div>
-        <div id="median-viewer" class="splat-viewer" tabindex="0" aria-label="中值滤波对照播放器" hidden>
-          <div class="viewer-hint">拖动环视 · 滚轮前后 · WASD 移动 · Q/E 升降</div>
-          <div class="viewer-controls track-controls">
-            <button id="median-play" type="button" aria-label="播放滤波对照" disabled>▶</button>
-            <input id="median-timeline" type="range" min="0" max="0" value="0" step="1" aria-label="滤波对照时间轴" disabled>
-            <span id="median-frame">0 / 0</span>
-            <span id="median-performance"></span>
-          </div>
-        </div>
-        <div id="median-processing" class="uploading" hidden>
+        <div id="compression-processing" class="uploading" hidden>
           <span class="spinner"></span>
-          <strong>正在进行中值滤波…</strong>
-          <progress id="median-progress" max="100" value="0"></progress>
-          <span id="median-percent">准备原始参数序列…</span>
+          <strong id="compression-title">正在压缩高斯…</strong>
+          <progress id="compression-progress" max="100" value="0"></progress>
+          <span id="compression-percent">准备输入序列…</span>
         </div>
         <div id="uploading" class="uploading" hidden>
           <span class="spinner"></span>
@@ -101,12 +91,6 @@
           <strong>正在逐帧生成 PLY…</strong>
           <progress id="gaussian-progress" max="100" value="0"></progress>
           <span id="gaussian-percent">准备 SHARP 模型…</span>
-        </div>
-        <div id="track-processing" class="uploading" hidden>
-          <span class="spinner"></span>
-          <strong id="track-progress-title">正在生成高斯轨迹…</strong>
-          <progress id="track-progress" max="100" value="0"></progress>
-          <span id="track-percent">准备光流与视频深度…</span>
         </div>
       </section>
 
@@ -148,32 +132,16 @@
         <p id="gaussian-note">每帧使用对应 RGB 与公制深度调用 Apple SHARP。</p>
         <div class="depth-actions">
           <button id="run-gaussians" class="primary-action" type="button">开始生成 PLY 序列</button>
-          <button id="next-tracks" class="primary-action" type="button" hidden>下一步：高斯轨迹</button>
+          <button id="next-compression" class="primary-action" type="button" hidden>下一步：压缩高斯</button>
         </div>
       </section>
-      <section id="track-panel" class="analysis-panel" hidden>
-        <div class="analysis-heading">
-          <div><span>高斯轨迹</span><strong id="track-result">尚未生成</strong></div>
-        </div>
-        <div id="track-metrics" class="motion-metrics"></div>
-        <p id="track-note">沿光流连接轨迹，重复保留一条，遗漏建立新轨迹；直接读取单个动画文件重放。</p>
+      <section id="compression-panel" class="analysis-panel" hidden>
+        <div class="analysis-heading"><div><span>压缩高斯</span><strong id="compression-result">尚未压缩</strong></div></div>
+        <div id="compression-metrics" class="motion-metrics"></div>
+        <p id="compression-note">将第四步的完整 PLY 序列压缩打包为一个 splat4d 文件。</p>
         <div class="depth-actions">
-          <button id="run-tracks" class="primary-action" type="button">开始生成高斯轨迹</button>
-          <button id="next-median" class="primary-action" type="button" hidden>下一步：中值滤波</button>
-        </div>
-      </section>
-      <section id="median-panel" class="analysis-panel" hidden>
-        <div class="analysis-heading">
-          <div><span>中值滤波</span><strong id="median-result">尚未滤波</strong></div>
-          <div id="median-switch" class="view-switch" hidden>
-            <button id="median-original" type="button" disabled>原始序列</button>
-            <button id="median-filtered" class="active" type="button" disabled>中值滤波后</button>
-          </div>
-        </div>
-        <div id="median-metrics" class="motion-metrics"></div>
-        <p id="median-note">5 帧时间窗口，处理全部高斯属性。</p>
-        <div class="depth-actions">
-          <button id="median-run" class="primary-action" type="button">开始中值滤波</button>
+          <button id="compression-run" class="primary-action" type="button">开始压缩高斯</button>
+          <a id="compression-download" class="replace-button" download hidden>下载压缩文件</a>
         </div>
       </section>
       <pre id="error" role="alert" hidden></pre>

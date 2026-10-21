@@ -1,3 +1,5 @@
+> 历史独立实验：旧第五步已从主流程移除。本页只读取此前已有的生命周期文件；旧计算脚本见根目录 backups/gaussian-tracks-2026-10-20.zip。
+
 # Gaussian trajectory codec experiment
 
 Entry: `/trajectory-codec-experiment.html` on the local workbench (default port 8775).

@@ -14,7 +14,7 @@ async function readArray(spec, Type, frame = null, signal) {
   return new Type(await response.arrayBuffer());
 }
 
-export class TrackSequenceViewer extends PlySequenceViewer {
+export class CodecSequenceViewer extends PlySequenceViewer {
   async load(manifest) {
     this.stop();
     this.clearMeshes();

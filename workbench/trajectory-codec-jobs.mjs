@@ -38,7 +38,7 @@ export function codecJobs(appDir) {
   async function launch(name) {
     const runDir = join(appDir, 'runs', idFor(name));
     const source = JSON.parse(await readFile(join(runDir, 'tracks-lifecycle', 'tracks.json'), 'utf8'));
-    if (source.status !== 'complete' || source.format !== 'sharp.gaussian_tracks.v5') throw new Error('请先完成第五步高斯轨迹');
+    if (source.status !== 'complete' || source.format !== 'sharp.gaussian_tracks.v5') throw new Error('此历史实验需要已有的生命周期轨迹文件；当前第五步已改为压缩高斯');
     const previous = await saved(name);
     if (previous?.status === 'complete' || (previous?.status === 'running' && alive(previous.pid))) return read(name);
     const out = directory(name);

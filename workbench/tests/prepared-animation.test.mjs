@@ -5,7 +5,7 @@ import {applyAnimationFrame} from '../static/animation-splats.js';
 import {packAnimationFrame} from '../static/animation-pack.js';
 import {PreparedSplats} from '../static/prepared-animation.js';
 import {PlySequenceViewer} from '../static/ply-viewer.js';
-import {TrackSequenceViewer} from '../static/track-viewer.js';
+import {CodecSequenceViewer} from '../static/codec-viewer.js';
 
 test('worker packing matches Spark byte-for-byte, including edge cases', () => {
   let seed = 247;
@@ -73,7 +73,7 @@ test('prepared playback uses its timer once, ignores rAF, and cancels on pause',
   globalThis.setTimeout = fn => { callback = fn; return ++timerId; };
   globalThis.clearTimeout = () => { callback = undefined; };
   globalThis.document = {activeElement: null, visibilityState: 'visible'};
-  const viewer = Object.create(TrackSequenceViewer.prototype);
+  const viewer = Object.create(CodecSequenceViewer.prototype);
   Object.assign(viewer, {preparation: {complete: true}, playing: true, host: {hidden: false},
     fps: 25, nextFrameAt: performance.now() - 1, lastRenderAt: performance.now(), current: 0,
     renderer: {render() { renders++; }}, onPlayback() {}, didRenderFrame() {},
@@ -104,7 +104,7 @@ test('prepared playback never draws or advances attributes while their sort is p
   const initialMappingVersion = mesh.mappingVersion;
   const selected = [], drawn = [];
   let finishSort;
-  const viewer = Object.create(TrackSequenceViewer.prototype);
+  const viewer = Object.create(CodecSequenceViewer.prototype);
   const spark = {sorting: false, autoUpdate: false, update() {
     this.sorting = true;
     return new Promise(resolve => { finishSort = () => { this.sorting = false; resolve(); }; });

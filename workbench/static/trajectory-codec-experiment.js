@@ -1,4 +1,4 @@
-import {MedianComparisonViewer} from './median-viewer.js';
+import {CodecComparisonViewer} from './codec-comparison-viewer.js';
 const $ = id => document.getElementById(id);
 const stages = {preparing:'读取原始轨迹与归一化统计',training:'训练编码和共享解码器',checkpoint:'正在保存检查点',exporting:'导出独立编码文件',exported:'编码文件已导出',decoding:'本机解码完整序列',decoded:'解码完成',evaluating:'渲染对照并计算误差',statistics:'统计全部属性误差',complete:'实验完成'};
 let videos=[], selected=null, state=null, player=null, loaded=null, busy=false, preparationStart=0, generation=0;
@@ -59,7 +59,7 @@ $('start').onclick=()=>action();$('stop').onclick=()=>action(true);
 $('video').onchange=async()=>{generation++;selected=videos.find(v=>v.name===$('video').value);state=null;loaded=null;player?.stop();player?.clearMeshes();$('viewer').hidden=true;$('load-preview').disabled=false;render();await refresh();};
 $('load-preview').onclick=async()=>{
   if(!state?.preview||loaded)return;loaded=selected.name;preparationStart=performance.now();$('load-preview').disabled=true;$('viewer').hidden=false;
-  if(!player)player=new MedianComparisonViewer($('viewer'),{
+  if(!player)player=new CodecComparisonViewer($('viewer'),{
     onFrame:(index,count)=>{$('timeline').max=count-1;$('timeline').value=index;$('frame').textContent=`${index+1} / ${count} · ${(index/(state?.preview?.fps||25)).toFixed(2)} s`;},
     onPlayback:playing=>{$('play').textContent=playing?'暂停':'播放';},
     onBuffering:p=>{for(const id of ['original','decoded','play','timeline','reset'])$(id).disabled=p.preparing;$('preview-status').textContent=p.preparing?`网页缓存准备 ${p.ready} / ${p.total} 帧`:`网页缓存准备完成，用时 ${((performance.now()-preparationStart)/1000).toFixed(1)} s。切换保持同一帧、同一视角。`;$('fps').textContent=p.preparing?'':'已就绪';},

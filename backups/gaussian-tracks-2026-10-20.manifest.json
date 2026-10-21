@@ -1,0 +1,425 @@
+{
+  "description": "Source snapshot before replacing Gaussian trajectory step 5 and median step 6; no datasets, environments or weights.",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 380,
+      "sha256": "74bf070568d0fb15e0047924f07d7db1df268ce4aea55cdfe87084d2d16c8a66"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5109,
+      "sha256": "20be60a55b23b5159512d8d76bcfab5508837231277d8425154f9ca3eb388772"
+    },
+    {
+      "path": "workbench/.gitignore",
+      "bytes": 56,
+      "sha256": "ed3d21506648597ef574638e56c4b3d5c84278393803c7a791ca19e0f267a861"
+    },
+    {
+      "path": "workbench/animation_worker.py",
+      "bytes": 3299,
+      "sha256": "35d25f3cf4d5e02271b5a2d368714edc184267b69f8d02e40499888429dc4b79"
+    },
+    {
+      "path": "workbench/depth_pro_experiment_worker.py",
+      "bytes": 2422,
+      "sha256": "e12ae7b62637e373c71a0f1f176d247ec9066b920ecd40d37b2b8037d9d95551"
+    },
+    {
+      "path": "workbench/depth_worker.py",
+      "bytes": 3949,
+      "sha256": "f1df1194cf30371a748abbef631c4218f3d18bc9ace79823cbb53d5c10aa4b4e"
+    },
+    {
+      "path": "workbench/diagnose_depth_side.py",
+      "bytes": 9797,
+      "sha256": "de0070bef8382327cc9efe4fdca9d563fd9765ae09b122dce545f0b6a4ac146d"
+    },
+    {
+      "path": "workbench/dynamic/check_core.py",
+      "bytes": 2701,
+      "sha256": "126042bc0b7868efb4ebf4ab1c6786aa32dc9f48d29543d586500c57346565bb"
+    },
+    {
+      "path": "workbench/dynamic/check_joint.py",
+      "bytes": 2221,
+      "sha256": "e25873342e127628bb4367fed7f5084870949aa862a24c7b2cf4b5ce7639c4ed"
+    },
+    {
+      "path": "workbench/dynamic/config.json",
+      "bytes": 1243,
+      "sha256": "288ee982eb41f3a1767ca37afb859b2187b463161dc94c3fe77567b3c91a0f80"
+    },
+    {
+      "path": "workbench/dynamic/prepare_upstream.py",
+      "bytes": 2269,
+      "sha256": "4398685dd54a194feb35fa56820325100e91500359a1cc274848da891d75225a"
+    },
+    {
+      "path": "workbench/dynamic/preprocess.py",
+      "bytes": 11543,
+      "sha256": "f4ec03b67b3ff4eb56756d6cc2c4636cea1650cce65764649eb9e326dfa1e036"
+    },
+    {
+      "path": "workbench/dynamic/runtime.py",
+      "bytes": 8173,
+      "sha256": "230c2e9f6c410caa2a76757ebc734f57e2e35d6c1e91f5dd262a9725f5c0e7f2"
+    },
+    {
+      "path": "workbench/dynamic/training.py",
+      "bytes": 16805,
+      "sha256": "565a68ac584f77a7a277899ff4a980fd2ca97ecd0ba42ed0c4957cefd418f734"
+    },
+    {
+      "path": "workbench/dynamic/upstream.py",
+      "bytes": 26798,
+      "sha256": "ea4df87c3d6bb315d3fa20847b55e36200e950675598916c1927cbef3376a57f"
+    },
+    {
+      "path": "workbench/dynamic_preview.py",
+      "bytes": 2103,
+      "sha256": "6815bd7dcfcdaa52673cfa7585122affddc8fd5ca3e3f22735434f4d652240bc"
+    },
+    {
+      "path": "workbench/dynamic_server.mjs",
+      "bytes": 6697,
+      "sha256": "c4fc7e1800e3064344cbbd66e9949d3288775ba47de721f52d2a243cecb63155"
+    },
+    {
+      "path": "workbench/dynamic_worker.py",
+      "bytes": 4160,
+      "sha256": "03b6bc05aab20c388db86d81709ef5603f5d6a51e000bd18865aeb88971d3b63"
+    },
+    {
+      "path": "workbench/flow_worker.py",
+      "bytes": 7581,
+      "sha256": "d1d106b65ea85b0cc44af0d287196357642abc9b10f33c7bacf789cda4d588e9"
+    },
+    {
+      "path": "workbench/gaussian_animation.py",
+      "bytes": 6011,
+      "sha256": "c1c1e0fad0250790005bc71e6c70c22686c6874bb8b34a2cd3c064eb89f54c2d"
+    },
+    {
+      "path": "workbench/gaussian_correspondence.py",
+      "bytes": 4119,
+      "sha256": "f901574da07a7f298168b302c587f7e479e94f35e96cb0eb75a0a2fccb3efb94"
+    },
+    {
+      "path": "workbench/gaussian_grid.py",
+      "bytes": 5051,
+      "sha256": "b302b0155bc2207159f98a2412638c2a2ff2c980994a57ccb9eee0b3171c6f13"
+    },
+    {
+      "path": "workbench/gaussian_lifecycle.py",
+      "bytes": 4890,
+      "sha256": "5ad5c57c4f8c896d2d8dec96a56ef8fbe4ba0f2847decf7568914f42407580b6"
+    },
+    {
+      "path": "workbench/gaussian_median.py",
+      "bytes": 3106,
+      "sha256": "711387cdbb3cedda0c5a5090ae34c88c772c9fa799bdfd77a7f8c38ad50c74b3"
+    },
+    {
+      "path": "workbench/gaussian_tracks.py",
+      "bytes": 9471,
+      "sha256": "5fe61afbeb5dd0830b3ba8366d04ccb05b8af0095c06caefedb04234033f807c"
+    },
+    {
+      "path": "workbench/gaussian_worker.py",
+      "bytes": 8726,
+      "sha256": "8d43e911f90d9ae35e5db3bcf588c7d4e2cb6292a22f45ec1b9e8b9da14666b1"
+    },
+    {
+      "path": "workbench/lifecycle_worker.py",
+      "bytes": 5331,
+      "sha256": "897d4100b31facc7b7c7f6831c5ed442def200a413056b5207594f85acc2ad32"
+    },
+    {
+      "path": "workbench/median_worker.py",
+      "bytes": 3479,
+      "sha256": "51f879067a2d2bccb2d4dc37b1af39899202f424d975b0a98b46281804e160c0"
+    },
+    {
+      "path": "workbench/moge2_experiment_worker.py",
+      "bytes": 2479,
+      "sha256": "bd241c44088b2f82a6e3b1b6637b97be49434eb506f93fe2f63f8b25899e49bf"
+    },
+    {
+      "path": "workbench/package-lock.json",
+      "bytes": 1128,
+      "sha256": "8cb16e498c06eb408425367d4a33c5ca7b3aebbc9d8ea1a075352efb31eacfdc"
+    },
+    {
+      "path": "workbench/package.json",
+      "bytes": 245,
+      "sha256": "c051e569da09e22928a50602118ef02aa64c66aa36016e57445eae4800970c1b"
+    },
+    {
+      "path": "workbench/pointcloud_common.py",
+      "bytes": 1783,
+      "sha256": "1248e3ddc7f8a2102e58a315c03e74a51adbec1793ce9c1c4094c58e418174d7"
+    },
+    {
+      "path": "workbench/README.md",
+      "bytes": 4748,
+      "sha256": "e27ac00c28590c623744d3ec97412df2f5143b8f489dd5116a2d0d972ed0abb4"
+    },
+    {
+      "path": "workbench/recover_gaussian_grids.py",
+      "bytes": 2290,
+      "sha256": "a3797a636f954695da05249ba656ed9be1f1758bc71301c56c4ba42a020a214c"
+    },
+    {
+      "path": "workbench/requirements.txt",
+      "bytes": 160,
+      "sha256": "3498170e73b4179553497cf54bc204d85e64f829ae359ba5b665dced44dd22a3"
+    },
+    {
+      "path": "workbench/server.mjs",
+      "bytes": 35550,
+      "sha256": "dea6be8662e0c4d55973732e027928afb76ee5100ee957b36c09a86d022c2f49"
+    },
+    {
+      "path": "workbench/start.cmd",
+      "bytes": 45,
+      "sha256": "16fa85831fdd4d832585d9348c77d440e2b94c6696293876dd6b2dc906a6bf0a"
+    },
+    {
+      "path": "workbench/static/animation-file.js",
+      "bytes": 2443,
+      "sha256": "fb80e28eddf1be9ebdeb5987e02264dd0d9e4e4b57adb8f578a2d53198984fd5"
+    },
+    {
+      "path": "workbench/static/animation-pack.js",
+      "bytes": 4255,
+      "sha256": "00fa9a8760c5645533373b20ffb8b5c7e21da9828f94a9215b52ef9aaf687ce6"
+    },
+    {
+      "path": "workbench/static/animation-splats.js",
+      "bytes": 975,
+      "sha256": "2b266c9826a2d3b19ea4976234da9c9a2fc7f97cd215f82e43a4b7cdb007a77e"
+    },
+    {
+      "path": "workbench/static/animation-worker.js",
+      "bytes": 1010,
+      "sha256": "dc7aedc295fe7fdbe70f170a5a00a96ad6d25fe1b9428d9bddf4085fabaf3dce"
+    },
+    {
+      "path": "workbench/static/app.js",
+      "bytes": 39314,
+      "sha256": "42c324cb7ee6a1d8d5befdde4d9dbfc4dd093664576a3dfc170348197798ea81"
+    },
+    {
+      "path": "workbench/static/depth-experiment.html",
+      "bytes": 2566,
+      "sha256": "efe230050cabaa487aa8e4dd8ecce59997e7fa440fa7e6faa722691f1cd7e34e"
+    },
+    {
+      "path": "workbench/static/depth-experiment.js",
+      "bytes": 4056,
+      "sha256": "b4404b7d249daf85465b655436381ec887740d0ca38e16227578aba93849143d"
+    },
+    {
+      "path": "workbench/static/dynamic.js",
+      "bytes": 9022,
+      "sha256": "cdc9d06f9b35121bbf8ba7a61d944f40a26d0c145fc46f4b21cbf37e5d5bf767"
+    },
+    {
+      "path": "workbench/static/index.html",
+      "bytes": 10969,
+      "sha256": "6ee165427c4351b2359f726a4bf2cbc05697853e43cfa2e3e2bff46918722f10"
+    },
+    {
+      "path": "workbench/static/indexed-ply.js",
+      "bytes": 3086,
+      "sha256": "56a862c6634fcd2e107c22ee312c674677c4ab8cdcc85113c5a1ca7a2cc2a46c"
+    },
+    {
+      "path": "workbench/static/layer-compare.html",
+      "bytes": 2301,
+      "sha256": "d2013a492ab857603534717e4e33e6b19ba7f4613a2573d2eae979cad941dfc5"
+    },
+    {
+      "path": "workbench/static/layer-compare.js",
+      "bytes": 3513,
+      "sha256": "838fc64465e11d59ef25e578cfa67d96de9cfa80ab5ea0776d339c52e26606ee"
+    },
+    {
+      "path": "workbench/static/median-step.js",
+      "bytes": 7777,
+      "sha256": "5cdab7db9c80068d547ab974809252cd8629076c990dd38213f4e43d945c96eb"
+    },
+    {
+      "path": "workbench/static/median-viewer.js",
+      "bytes": 3559,
+      "sha256": "9c0b47f65ee32abbed51e90321f7756b79215a7712fbde1e80a132f6fdcacac6"
+    },
+    {
+      "path": "workbench/static/ply-viewer.js",
+      "bytes": 8604,
+      "sha256": "f2b2011aed0b74cdf466e93c58062a35439bbc1abb70a07286893d546c9ae171"
+    },
+    {
+      "path": "workbench/static/pointcloud-viewer.js",
+      "bytes": 6037,
+      "sha256": "549a48cdbfad8f71be488d29dca78a12c4601c66190ef73778d271985e47c49f"
+    },
+    {
+      "path": "workbench/static/prepared-animation.js",
+      "bytes": 3146,
+      "sha256": "2f0b076926a9ddbcf5eec0dbef2f9cf9e2c52d6bcfccbef3256cf59d54a41909"
+    },
+    {
+      "path": "workbench/static/style.css",
+      "bytes": 12175,
+      "sha256": "45e27a4d0391efa06f6af88e2286279da1255af5330c0ebb040e48bca3c1de9b"
+    },
+    {
+      "path": "workbench/static/track-viewer.js",
+      "bytes": 14462,
+      "sha256": "ffdef277d9fc4516f95d8c16632bc0b63e447dbc34761709178f2dd5d98888b8"
+    },
+    {
+      "path": "workbench/static/trajectory-codec-experiment.html",
+      "bytes": 3323,
+      "sha256": "4e0f28325f44697e58531294bb3ce6c0a3b7a4f58f82ce3285a843eeaff1ede6"
+    },
+    {
+      "path": "workbench/static/trajectory-codec-experiment.js",
+      "bytes": 8823,
+      "sha256": "96969da5359940f3acaf9ecdf256d61d4fc5b5ce2d03b5527154c67eb9eb8533"
+    },
+    {
+      "path": "workbench/static/trajectory-codec.css",
+      "bytes": 2193,
+      "sha256": "99352e4119054fdf88d1d25736cd9b1a3cedfe986ad6f0ceb8ee3086f51d2f30"
+    },
+    {
+      "path": "workbench/tests/animation-file.test.mjs",
+      "bytes": 6110,
+      "sha256": "1cc4731371a041c34e16ad085492fd13502ed3d08b5350aac33110b12963ca11"
+    },
+    {
+      "path": "workbench/tests/indexed-ply.test.mjs",
+      "bytes": 3564,
+      "sha256": "149bbca53321f5488fc9a773534e280821708482b16eea4c4815c9051dd51dd4"
+    },
+    {
+      "path": "workbench/tests/prepared-animation.test.mjs",
+      "bytes": 6505,
+      "sha256": "bfe077cc488592090e3ea5f223909821ed5657fe463e3adfe34d1ac8fbf34f4e"
+    },
+    {
+      "path": "workbench/tests/test_gaussian_animation.py",
+      "bytes": 4674,
+      "sha256": "5d7fe41812553ff43cda971efeace8bdbb0a9af50a1cf14d0b68e708befb242f"
+    },
+    {
+      "path": "workbench/tests/test_gaussian_correspondence.py",
+      "bytes": 4805,
+      "sha256": "f33c8614c7293b527a39cbecd374f9d5ffb7e2e1a14f8eef42d5a41d4231fb18"
+    },
+    {
+      "path": "workbench/tests/test_gaussian_grid.py",
+      "bytes": 5341,
+      "sha256": "1077bd39426d73339cb560aa81a092edba7bbd5cb7ad991bddd093326da05170"
+    },
+    {
+      "path": "workbench/tests/test_gaussian_median.py",
+      "bytes": 3521,
+      "sha256": "179cf81230710d4988bc78dd7a372387b3100abbb802c64a0271a23d17477255"
+    },
+    {
+      "path": "workbench/tests/test_gaussian_tracks.py",
+      "bytes": 7467,
+      "sha256": "4c364c1f1ac3880eff3741fcd7d17e60b4f213576ecd091309fc1eb0fdff6d9d"
+    },
+    {
+      "path": "workbench/tests/test_indexed_tracks.py",
+      "bytes": 7671,
+      "sha256": "f93283d4757416792f9163790f2a730ddd5fb063080b3bc8be332cab328ee794"
+    },
+    {
+      "path": "workbench/tests/test_lifecycle_tracks.py",
+      "bytes": 6942,
+      "sha256": "c636acf1b79431fefe2d4bfe4bced10e376963ada0eec1a38d460657dbda8804"
+    },
+    {
+      "path": "workbench/tests/test_trajectory_codec.py",
+      "bytes": 6631,
+      "sha256": "a20675b8ce695871e9454b9a439a43173dfdb38aaef7da0919b4dcda62462328"
+    },
+    {
+      "path": "workbench/track_worker.py",
+      "bytes": 5355,
+      "sha256": "a389f5839008a7a28cc035caf76ee24be1c65cc2a7a98cbc4e9539ad091f3193"
+    },
+    {
+      "path": "workbench/trajectory-codec-jobs.mjs",
+      "bytes": 4537,
+      "sha256": "2c33241bed9d1a0eadca299981965f45a67118850d1d2112d9332d254214ac85"
+    },
+    {
+      "path": "workbench/trajectory_codec/__init__.py",
+      "bytes": 81,
+      "sha256": "2882690601fe91b7c28052b3593c5dec08c3a668d3761c0044bd20c5c741c0fe"
+    },
+    {
+      "path": "workbench/trajectory_codec/config.json",
+      "bytes": 339,
+      "sha256": "b943eb6ec45363437d947d3348975ebd5b46f6d0d8d52a39c82f94cfc23fc929"
+    },
+    {
+      "path": "workbench/trajectory_codec/data.py",
+      "bytes": 3897,
+      "sha256": "45567a22723cb9919b97c2d17fddfc3b9b4e7a4f8138693bcb61bbb5f4d81e8d"
+    },
+    {
+      "path": "workbench/trajectory_codec/decode.py",
+      "bytes": 4181,
+      "sha256": "98534020275e5e34f495d72f340f4d66171cf77779ede6bac9fe1add429aeeb9"
+    },
+    {
+      "path": "workbench/trajectory_codec/evaluation.py",
+      "bytes": 8432,
+      "sha256": "2e3a95572bd5be875213bf1f6b4631110d75e7c40aa7b5f0f34d15291af536bf"
+    },
+    {
+      "path": "workbench/trajectory_codec/LICENSE.siren-pytorch",
+      "bytes": 1066,
+      "sha256": "02cf6ed7df17f94fafa61e67a089ee51faac006db35ffa173c70e6763c253cf6"
+    },
+    {
+      "path": "workbench/trajectory_codec/model.py",
+      "bytes": 3437,
+      "sha256": "e0276327d89314fa06796fd1f0415be5e5b4a51cff68902be55d0e130a9da050"
+    },
+    {
+      "path": "workbench/trajectory_codec/README.md",
+      "bytes": 6043,
+      "sha256": "888ebcf419ca3c68e1e669fa0d9ed31b39d62ac2d95ee0ede4a7dc41543aa5f5"
+    },
+    {
+      "path": "workbench/trajectory_codec/requirements.txt",
+      "bytes": 92,
+      "sha256": "451d11bd839a6926d4e8e1b7ced8bf4d4c1c38c4e60cdefb4f55fd16ce785248"
+    },
+    {
+      "path": "workbench/trajectory_codec/state.py",
+      "bytes": 1033,
+      "sha256": "2360466b6cfb04941ff0fbbae222b630050424b8c6e52102c2a45eaabe9461be"
+    },
+    {
+      "path": "workbench/trajectory_codec/training.py",
+      "bytes": 10069,
+      "sha256": "7104e8ff85957d2e3cdb8deab07cf362782c6bb1f5bc5d1152cd8a41d96e05a8"
+    },
+    {
+      "path": "workbench/trajectory_codec_worker.py",
+      "bytes": 2555,
+      "sha256": "c572592f68b80e72d9400ce8164a5ccae039aa7023392790e9c3e9a61421d461"
+    }
+  ]
+}

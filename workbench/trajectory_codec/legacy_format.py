@@ -1,69 +1,12 @@
-"""Standalone, lossless float32 Gaussian parameter sequences (.4dgs).
-
-This is a project-specific container, not an industry-standard 4DGS format.
-An initial parameter table is followed by absolute parameter samples, in fixed
-ID order. Absolute samples avoid delta subtraction/addition rounding errors.
-"""
-
+"""Legacy file I/O for the separate trajectory-codec experiment, not a pipeline step."""
 import json
 import struct
 from pathlib import Path
-
 import numpy as np
-
 FORMAT = "sharp.gaussian_tracks.v4"
 MAGIC = b"SH4DGS01"
 COLUMNS = "x y z f_dc_0 f_dc_1 f_dc_2 opacity scale_0 scale_1 scale_2 rot_0 rot_1 rot_2 rot_3".split()
 RECORD_BYTES = len(COLUMNS) * 4
-
-
-def read_ply_parameters(path):
-    """Read original binary float32 fields without re-encoding any values."""
-    fields, count, vertex, little_endian = [], 0, False, False
-    with open(path, "rb") as stream:
-        while True:
-            line = stream.readline()
-            if not line:
-                raise ValueError("PLY header is incomplete")
-            words = line.decode("ascii").strip().split()
-            if words == ["end_header"]:
-                offset = stream.tell()
-                break
-            if words[:1] == ["format"]:
-                little_endian = words[1:] == ["binary_little_endian", "1.0"]
-            if words[:1] == ["element"]:
-                vertex = words[1] == "vertex"
-                if vertex:
-                    count = int(words[2])
-            elif vertex and words[:1] == ["property"]:
-                if words[1] != "float":
-                    raise ValueError("Expected float32 Gaussian vertex properties")
-                fields.append(words[2])
-    if not little_endian or not count or any(name not in fields for name in COLUMNS):
-        raise ValueError("Unsupported Gaussian PLY layout")
-    source = np.memmap(path, dtype="<f4", mode="r", offset=offset, shape=(count, len(fields)))
-    try:
-        return np.ascontiguousarray(source[:, [fields.index(name) for name in COLUMNS]])
-    finally:
-        source._mmap.close()
-
-
-def gather_parameters(source, indices, layers):
-    """Same whole-record lookup and transparent placeholders as indexed-ply.js."""
-    cells = len(indices)
-    if source.shape != (layers * cells, len(COLUMNS)):
-        raise ValueError("PLY vertex count does not match the trajectory grid")
-    if np.any((indices < -1) | (indices >= cells)):
-        raise ValueError("Source cell index is out of bounds")
-    valid = indices >= 0
-    result = np.empty((layers, cells, len(COLUMNS)), dtype="<f4")
-    for layer in range(layers):
-        result[layer] = source[layer * cells + np.maximum(indices, 0)]
-        result[layer, ~valid] = 0
-        result[layer, ~valid, 2] = 1  # finite center in front of the camera
-        result[layer, ~valid, 6] = -np.inf  # sigmoid(-inf) == 0
-        result[layer, ~valid, 10] = 1  # identity quaternion, wxyz
-    return result.reshape(-1, len(COLUMNS))
 
 
 def make_header(tracks, times):
@@ -73,7 +16,7 @@ def make_header(tracks, times):
     header = {name: tracks[name] for name in fields if name in tracks}
     frame_bytes = tracks["trackCount"] * RECORD_BYTES
     header.update({
-        "format": FORMAT, "status": "complete", "positionEncoding": "full_attribute_samples",
+        "format": V4_FORMAT, "status": "complete", "positionEncoding": "full_attribute_samples",
         "container": "SH4DGS01; project-specific .4dgs; no external files required",
         "dtype": "<f4", "columns": COLUMNS, "recordBytes": RECORD_BYTES,
         "frameBytes": frame_bytes, "timesSeconds": np.asarray(times).tolist(),
@@ -111,10 +54,51 @@ def read_container_header(path):
 def read_animation(path):
     """Return self-contained metadata and mmap [time, fixed ID, parameter]."""
     header, offset = read_container_header(path)
-    if header["format"] != FORMAT or header["columns"] != COLUMNS or header["dtype"] != "<f4":
+    if header["format"] != V4_FORMAT or header["columns"] != COLUMNS or header["dtype"] != "<f4":
         raise ValueError("Unsupported Gaussian animation parameter layout")
     shape = (header["frameCount"], header["trackCount"], len(COLUMNS))
     expected = offset + header["frameCount"] * header["frameBytes"]
     if Path(path).stat().st_size != expected:
         raise ValueError("Gaussian animation file length does not match its header")
     return header, np.memmap(path, dtype="<f4", mode="r", offset=offset, shape=shape)
+
+V4_FORMAT = FORMAT
+FORMAT = "sharp.gaussian_tracks.v5"
+
+def make_lifecycle_header(metadata, times, lifetimes):
+    header = make_header(metadata, times)
+    header.pop("reference")
+    header.pop("samples")
+    parameter_bytes = metadata["trackCount"] * RECORD_BYTES
+    parameter_offset = metadata["cellCount"] * 4
+    frame_bytes = parameter_offset + parameter_bytes
+    header.update({
+        "format": FORMAT, "frameBytes": frame_bytes,
+        "parameterOffset": parameter_offset, "parameterBytes": parameter_bytes,
+        "totalTrackCount": len(lifetimes) * metadata["layerCount"],
+        "cellTrackIds": {"offset": 0, "dtype": "<u4", "shape": [metadata["cellCount"]]},
+        "parameters": {"offset": parameter_offset, "shape": [metadata["trackCount"], len(COLUMNS)]},
+        "lifetimes": {"offset": len(times) * frame_bytes, "dtype": "<u4",
+                      "shape": list(lifetimes.shape), "columns": ["cellTrackId", "startFrame", "endFrameExclusive"]},
+        "idDefinition": "Gaussian ID = cellTrackIds[slot]*layerCount+layer; IDs never reused",
+        "slotDefinition": "parameters[layer*cellCount+slot]; slots reused when a new trajectory is born",
+        "collisionRule": "smallest cell trajectory ID survives; other trajectories end before this frame",
+        "birthRule": "each uncovered target cell starts a new trajectory, in ascending cell order",
+        "visibilityEncoding": "every source Gaussian appears once per frame; no transparent placeholders",
+        "validDefinition": "complete source-cell coverage, not verified physical identity or visibility",
+        "birthCounts": metadata["birthCounts"], "endedCounts": metadata["endedCounts"],
+    })
+    return header
+
+
+def read_lifecycle_animation(path):
+    """Read a standalone v5 file as frame records and trajectory lifetimes."""
+    header, offset = read_container_header(path)
+    if header["format"] != FORMAT:
+        raise ValueError("Expected lifecycle animation v5")
+    dtype = np.dtype([("ids", "<u4", (header["cellCount"],)),
+                      ("parameters", "<f4", (header["trackCount"], len(COLUMNS)))])
+    frames = np.memmap(path, dtype=dtype, mode="r", offset=offset, shape=(header["frameCount"],))
+    spec = header["lifetimes"]
+    lifetimes = np.memmap(path, dtype="<u4", mode="r", offset=offset + spec["offset"], shape=tuple(spec["shape"]))
+    return header, frames, lifetimes

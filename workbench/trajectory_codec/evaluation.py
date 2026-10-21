@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from gaussian_lifecycle import read_lifecycle_animation
+from .legacy_format import read_lifecycle_animation
 from dynamic.upstream import ssim  # Existing, attributed Graphdeco/MoDGS implementation.
 from .model import unit_quaternion
 from .state import State, atomic_json

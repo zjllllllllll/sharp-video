@@ -1,6 +1,5 @@
 import {PlySequenceViewer} from './ply-viewer.js';
-import {TrackSequenceViewer} from './track-viewer.js';
-import {MedianStep} from './median-step.js';
+import {CompressionStep} from './compression-step.js';
 
 const fileInput = document.querySelector('#video-file');
 const dropZone = document.querySelector('#drop-zone');
@@ -49,22 +48,6 @@ const splatViewerHost = document.querySelector('#splat-viewer');
 const viewerPlay = document.querySelector('#viewer-play');
 const viewerTimeline = document.querySelector('#viewer-timeline');
 const viewerFrame = document.querySelector('#viewer-frame');
-const stepTracks = document.querySelector('#step-tracks');
-const nextTracksButton = document.querySelector('#next-tracks');
-const trackPanel = document.querySelector('#track-panel');
-const trackResult = document.querySelector('#track-result');
-const trackMetrics = document.querySelector('#track-metrics');
-const trackNote = document.querySelector('#track-note');
-const runTracksButton = document.querySelector('#run-tracks');
-const trackProcessing = document.querySelector('#track-processing');
-const trackProgressTitle = document.querySelector('#track-progress-title');
-const trackProgress = document.querySelector('#track-progress');
-const trackPercent = document.querySelector('#track-percent');
-const trackViewerHost = document.querySelector('#track-viewer');
-const trackPlay = document.querySelector('#track-play');
-const trackTimeline = document.querySelector('#track-timeline');
-const trackFrame = document.querySelector('#track-frame');
-const trackPerformance = document.querySelector('#track-performance');
 let currentVideo = null;
 let currentStage = 1;
 let analysisRunning = false;
@@ -73,12 +56,8 @@ let gaussianRunning = false;
 let gaussianPollToken = 0;
 let plyViewer = null;
 let loadedGaussianKey = null;
-let trackRunning = false;
-let trackPollToken = 0;
-let trackViewer = null;
-let loadedTrackKey = null;
-let trackLoadPromise = null;
-const medianStep = new MedianStep({showStage, showError, setMessage: text => { message.textContent = text; }});
+const compressionStep = new CompressionStep({showStage, showError,
+  isActive: () => currentStage === 5, setMessage: text => { message.textContent = text; }});
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return '';
@@ -99,9 +78,7 @@ function showError(error) {
 
 function setPreview(url, activeButton = null) {
   splatViewerHost.hidden = true;
-  trackViewerHost.hidden = true;
   plyViewer?.stop();
-  trackViewer?.stop();
   preview.hidden = false;
   const time = preview.currentTime || 0;
   const paused = preview.paused;
@@ -131,18 +108,9 @@ function showStage(stage) {
   if (stage === 3 && !currentVideo?.analysis?.allowed) return;
   if (stage === 4 && currentVideo?.depth?.status !== 'complete') return;
   if (stage === 5 && currentVideo?.gaussians?.status !== 'complete') return;
-  if (stage === 6 && medianStep.step.disabled) return;
-  medianStep.hide();
-  trackViewer?.stop();
-  trackViewerHost.hidden = true;
+  compressionStep.hide();
   currentStage = stage;
-  history.replaceState(null, '', `${location.pathname}${location.search}${stage === 6 ? '#median' : stage === 5 ? '#tracks' : ''}`);
-  trackPanel.hidden = true;
-  trackProcessing.hidden = true;
-  if (stage !== 5) {
-    trackViewerHost.hidden = true;
-    trackViewer?.stop();
-  }
+  history.replaceState(null, '', `${location.pathname}${location.search}${stage === 5 ? '#compression' : ''}`);
   if (stage !== 4) {
     splatViewerHost.hidden = true;
     preview.hidden = false;
@@ -155,8 +123,8 @@ function showStage(stage) {
   stepDepth.classList.toggle('done', stage > 3 && !!currentVideo?.depth);
   stepGaussians.classList.toggle('active', stage === 4);
   stepGaussians.classList.toggle('done', stage !== 4 && currentVideo?.gaussians?.status === 'complete');
-  stepTracks.classList.toggle('active', stage === 5);
-  stepTracks.classList.toggle('done', currentVideo?.tracks?.status === 'complete');
+  compressionStep.step.classList.toggle('active', stage === 5);
+  compressionStep.step.classList.toggle('done', currentVideo?.compression?.status === 'complete');
 
   if (stage === 1) {
     stageIndex.textContent = 'STEP 01';
@@ -204,23 +172,13 @@ function showStage(stage) {
     return;
   }
 
-  if (stage === 6) {
-    stageIndex.textContent = 'STEP 06';
-    stageTitle.textContent = '中值滤波';
-    analysisPanel.hidden = depthPanel.hidden = gaussianPanel.hidden = true;
-    analyzing.hidden = depthProcessing.hidden = gaussianProcessing.hidden = true;
-    preview.pause();
-    preview.hidden = true;
-    medianStep.show();
-    return;
-  }
-
   if (stage === 5) {
     stageIndex.textContent = 'STEP 05';
-    stageTitle.textContent = '高斯轨迹';
+    stageTitle.textContent = '压缩高斯';
     analysisPanel.hidden = depthPanel.hidden = gaussianPanel.hidden = true;
     analyzing.hidden = depthProcessing.hidden = gaussianProcessing.hidden = true;
-    renderTracks(currentVideo.tracks);
+    preview.pause(); preview.hidden = true;
+    compressionStep.show();
     return;
   }
 
@@ -235,12 +193,8 @@ function showStage(stage) {
 
 function showVideo(video, stage = 2) {
   plyViewer?.stop();
-  trackViewer?.stop();
-  trackPollToken++;
-  trackRunning = video.tracks?.status === 'running';
-  loadedTrackKey = null;
   currentVideo = video;
-  medianStep.setVideo(video);
+  compressionStep.setVideo(video);
   preview.src = originalUrl();
   preview.hidden = false;
   emptyState.hidden = true;
@@ -255,13 +209,13 @@ function showVideo(video, stage = 2) {
   stepGaussians.disabled = video.depth?.status !== 'complete';
   stepGaussians.classList.toggle('muted', video.depth?.status !== 'complete');
   stepGaussians.classList.remove('failed', 'done');
-  stepTracks.disabled = video.gaussians?.status !== 'complete';
-  stepTracks.classList.toggle('muted', stepTracks.disabled);
-  stepTracks.classList.toggle('failed', video.tracks?.status === 'failed');
+  compressionStep.step.disabled = video.gaussians?.status !== 'complete';
+  compressionStep.step.classList.toggle('muted', compressionStep.step.disabled);
+  compressionStep.step.classList.toggle('failed', video.compression?.status === 'failed');
   loadedGaussianKey = null;
   stepDepth.classList.toggle('done', video.depth?.status === 'complete');
   stepGaussians.classList.toggle('done', video.gaussians?.status === 'complete');
-  showStage(stage === 6 && !medianStep.step.disabled ? 6 : stage === 5 && !stepTracks.disabled ? 5 : 2);
+  showStage(stage === 5 && !compressionStep.step.disabled ? 5 : 2);
 
   if (!video.analysis) runAnalysis(video);
   if (video.gaussians?.status === 'running') {
@@ -269,7 +223,6 @@ function showVideo(video, stage = 2) {
     const token = ++gaussianPollToken;
     void pollGaussians(video, token);
   }
-  if (trackRunning) void pollTracks(video, trackPollToken);
 }
 
 function metric(label, value) {
@@ -408,9 +361,9 @@ async function loadGaussianViewer(gaussians) {
 }
 
 function renderGaussians(gaussians) {
-  stepTracks.disabled = gaussians?.status !== 'complete';
-  stepTracks.classList.toggle('muted', stepTracks.disabled);
-  nextTracksButton.hidden = stepTracks.disabled;
+  compressionStep.step.disabled = gaussians?.status !== 'complete';
+  compressionStep.step.classList.toggle('muted', compressionStep.step.disabled);
+  compressionStep.next.hidden = compressionStep.step.disabled;
   gaussianPanel.hidden = currentStage !== 4;
   if (currentStage !== 4) return;
 
@@ -467,196 +420,6 @@ function renderGaussians(gaussians) {
   }
   if (currentVideo.depth?.outputUrl) setPreviewIfDifferent(`${currentVideo.depth.outputUrl}?v=${encodeURIComponent(currentVideo.depth.createdAt)}`);
   message.textContent = '深度结果已准备好，可以开始生成逐帧 PLY。';
-}
-
-function updateTrackMetrics(tracks, index = 0) {
-  if (tracks.format === 'sharp.gaussian_tracks.v5') {
-    trackMetrics.innerHTML = [
-      metric('两层高斯 / 当前帧', Number(tracks.trackCount).toLocaleString()),
-      metric('原帧覆盖', '100%'),
-      metric('本帧新轨迹', Number(tracks.birthCounts[index]).toLocaleString()),
-      metric('整段轨迹 ID', Number(tracks.totalTrackCount).toLocaleString())
-    ].join('');
-    return;
-  }
-  trackMetrics.innerHTML = [
-    metric(tracks.layerCount === 2 ? '两层高斯 / 固定 ID' : '固定 ID', Number(tracks.trackCount).toLocaleString()),
-    metric('轨迹帧数', String(tracks.frameCount)),
-    metric(['sharp.gaussian_tracks.v3', 'sharp.gaussian_tracks.v4'].includes(tracks.format) ? '有效对应' : '当前有效', Number(tracks.validCounts[index]).toLocaleString()),
-    metric('时间轴', `${tracks.fps} FPS`)
-  ].join('');
-}
-
-function ensureTrackViewer() {
-  if (trackViewer) return trackViewer;
-  trackViewer = new TrackSequenceViewer(trackViewerHost, {
-    onFrame(index, count) {
-      trackTimeline.max = String(count - 1);
-      trackTimeline.value = String(index);
-      trackFrame.textContent = `${index + 1} / ${count} · ${trackViewer.times[index].toFixed(2)} s`;
-      if (currentStage === 5) updateTrackMetrics(trackViewer.manifest, index);
-    },
-    onPlayback(playing) {
-      trackPlay.textContent = playing ? '❚❚' : '▶';
-      trackPlay.setAttribute('aria-label', playing ? '暂停高斯轨迹' : '播放高斯轨迹');
-    },
-    onBuffering(progress) {
-      if (currentStage !== 5 || typeof progress !== 'object') return;
-      trackPlay.disabled = trackTimeline.disabled = progress.preparing;
-      trackPerformance.textContent = progress.preparing ? `准备 ${progress.ready}/${progress.total}` : '已就绪 · 目标 25 FPS';
-      message.textContent = progress.preparing
-        ? `正在后台准备流畅播放：${progress.ready} / ${progress.total} 帧。首帧可移动查看，准备完成后即可播放。`
-        : '全部帧已准备好。播放时直接切换 GPU 数据，右下角显示实测动画帧率。';
-    },
-    onPerformance(stats) {
-      if (currentStage !== 5) return;
-      trackPerformance.textContent = `${stats.fps.toFixed(1)} FPS · ${stats.milliseconds.toFixed(1)} ms`;
-      trackPerformance.dataset.samples = JSON.stringify(stats.samples);
-    },
-    onError: error => showError(`轨迹播放失败：${error.message}`)
-  });
-  return trackViewer;
-}
-
-async function loadTrackViewer(tracks) {
-  const video = currentVideo;
-  const stage = 5;
-  const key = `${video.name}:${tracks.format}:${tracks.generatedAt || tracks.elapsedSeconds}:${tracks.frameCount}`;
-  trackPlay.disabled = trackTimeline.disabled = true;
-  try {
-    if (loadedTrackKey !== key) {
-      trackPerformance.textContent = '';
-      delete trackPerformance.dataset.samples;
-      loadedTrackKey = key;
-      trackLoadPromise = ensureTrackViewer().load(tracks);
-    }
-    await trackLoadPromise;
-    if (currentStage !== stage || currentVideo !== video || loadedTrackKey !== key) return;
-    if (trackViewer.current < 0) {
-      // Leaving this step can cancel initial file loading before its header is
-      // available. Re-enter by loading the file again, not by querying no header.
-      if (trackViewer.standalone && !trackViewer.animationHeader) await trackViewer.load(tracks);
-      else await trackViewer.show(0);
-    }
-    if (currentStage !== stage || currentVideo !== video || loadedTrackKey !== key) return;
-    preview.pause();
-    preview.hidden = true;
-    trackViewerHost.hidden = false;
-    trackPlay.disabled = trackTimeline.disabled = !!trackViewer.preparing;
-    updateTrackMetrics(tracks, trackViewer.current);
-  } catch (error) {
-    if (loadedTrackKey === key) loadedTrackKey = null;
-    if (currentStage === stage && currentVideo === video) showError(`轨迹播放器载入失败：${error.message}`);
-  }
-}
-
-function renderTracks(tracks) {
-  medianStep.updateAvailability();
-  const status = tracks?.status || 'idle';
-  const indexed = tracks?.format === 'sharp.gaussian_tracks.v3';
-  const lifecycle = tracks?.format === 'sharp.gaussian_tracks.v5';
-  const standalone = lifecycle || tracks?.format === 'sharp.gaussian_tracks.v4';
-  stepTracks.classList.toggle('done', status === 'complete');
-  stepTracks.classList.toggle('failed', status === 'failed');
-  trackPanel.hidden = currentStage !== 5;
-  if (currentStage !== 5) return;
-
-  trackPanel.className = `analysis-panel ${status}`;
-  trackProcessing.hidden = status !== 'running';
-  runTracksButton.hidden = status === 'running' || (status === 'complete' && lifecycle);
-  runTracksButton.disabled = status === 'running';
-  runTracksButton.textContent = status === 'complete' && !lifecycle ? '重建完整覆盖轨迹'
-    : status === 'failed' ? '重新生成高斯轨迹' : '开始生成高斯轨迹';
-  trackMetrics.innerHTML = '';
-
-  if (status === 'complete') {
-    trackResult.textContent = lifecycle ? '完整覆盖 · 轨迹新增与结束' : standalone ? '独立动画文件 · 全属性更新' : indexed ? '光流对应 · 全属性更新'
-      : tracks.layerCount === 2 ? '两层高斯轨迹已生成 · 共享位移' : '高斯轨迹已生成';
-    updateTrackMetrics(tracks);
-    trackNote.textContent = lifecycle
-      ? '每帧原始高斯各显示一次：重复对应保留一条，遗漏建立新轨迹。全部属性保存在单个 .4dgs 文件中。轨迹 ID 可在后续帧新增，不保证跨遮挡身份连续。'
-      : standalone
-      ? '直接读取单个 .4dgs 文件：首帧高斯与逐帧完整参数均已保存，播放不依赖原始 PLY。时间轴为原始帧率，实际速度取决于读取与更新耗时。'
-      : indexed
-      ? '两层共用像素轨迹，分别读取对应原帧高斯的位置、颜色、尺度、旋转和透明度。允许重复对应，出界后停止；有效数不表示对应一定正确。'
-      : tracks.positionEncoding === 'reference_plus_shared_displacement'
-      ? '两层同网格高斯共用一份 RGB-D 位移，各自保留第一帧的位置偏移、颜色、尺度、旋转和透明度。未按误差筛选；有效数只表示位置可计算。'
-      : '同一组高斯按固定 ID 更新位置，颜色、尺度和旋转沿用第一帧。未按光流或深度误差筛选；有效数只表示位置可计算。';
-    message.textContent = '轨迹已接入当前视频流程，可直接播放、拖动时间轴或切换前面的步骤。';
-    void loadTrackViewer(tracks);
-    return;
-  }
-
-  trackViewerHost.hidden = true;
-  trackViewer?.stop();
-  preview.hidden = false;
-  if (currentVideo.depth?.sourceUrl) setPreviewIfDifferent(currentVideo.depth.sourceUrl);
-  if (status === 'running') {
-    const flow = tracks.stage === 'flow';
-    const exporting = tracks.stage === 'export';
-    const current = Number(flow ? tracks.currentPair || 0 : tracks.currentFrame || 0);
-    const total = Number(flow ? tracks.totalPairs || currentVideo.depth.frameCount - 1 : tracks.frameCount || currentVideo.depth.frameCount);
-    trackProgress.value = total ? 100 * current / total : 0;
-    trackProgressTitle.textContent = flow ? '正在计算相邻帧光流…' : exporting ? '正在写入独立高斯动画文件…' : '正在连接轨迹并补齐遗漏…';
-    trackPercent.textContent = `${current} / ${total} ${flow ? '对' : '帧'}`;
-    trackResult.textContent = flow ? '生成中 · 光流与候选对应' : exporting ? '生成中 · 全属性与轨迹起止时间' : '生成中 · 每帧完整覆盖';
-    trackNote.textContent = exporting ? '将两层高斯的全部属性、轨迹 ID 和起止时间写入一个文件。' : '沿光流连接已有轨迹，重复对应保留一条，未覆盖网格建立新轨迹。';
-    message.textContent = trackProgressTitle.textContent;
-  } else {
-    trackResult.textContent = status === 'failed' ? '轨迹生成失败' : '尚未生成';
-    trackNote.textContent = status === 'failed' ? tracks.error || '生成失败，可以重试。' : '复用已有光流，连接轨迹、去除重复引用并补齐遗漏，将每帧全部高斯保存为一个独立文件。';
-    message.textContent = '逐帧高斯已准备好，可以继续生成轨迹并重放。';
-  }
-}
-
-async function pollTracks(video, token) {
-  while (token === trackPollToken && currentVideo === video) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (token !== trackPollToken || currentVideo !== video) return;
-    try {
-      const response = await fetch(`/api/tracks?filename=${encodeURIComponent(video.name)}`, {cache: 'no-store'});
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || '无法读取轨迹生成进度');
-      if (token !== trackPollToken || currentVideo !== video) return;
-      video.tracks = result.tracks;
-      trackRunning = result.tracks?.status === 'running';
-      renderTracks(result.tracks);
-      if (!trackRunning) return;
-    } catch (error) {
-      trackRunning = false;
-      trackProcessing.hidden = true;
-      showError(error.message);
-      return;
-    }
-  }
-}
-
-async function runTracks() {
-  if (currentVideo?.gaussians?.status !== 'complete' || trackRunning) return;
-  const video = currentVideo;
-  const token = ++trackPollToken;
-  showError(null);
-  trackRunning = true;
-  runTracksButton.disabled = true;
-  try {
-    const response = await fetch('/api/tracks', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({filename: video.name})
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || '轨迹生成启动失败');
-    if (token !== trackPollToken || currentVideo !== video) return;
-    video.tracks = result.tracks;
-    trackRunning = result.tracks?.status === 'running';
-    renderTracks(result.tracks);
-    if (trackRunning) await pollTracks(video, token);
-  } catch (error) {
-    if (token !== trackPollToken || currentVideo !== video) return;
-    trackRunning = false;
-    runTracksButton.disabled = false;
-    trackProcessing.hidden = true;
-    showError(error.message);
-  }
 }
 
 async function runAnalysis(video) {
@@ -772,7 +535,7 @@ async function restoreLatest() {
     const response = await fetch('/api/state', {cache: 'no-store'});
     if (!response.ok) throw new Error('无法读取工作台状态');
     const state = await response.json();
-    if (state.videos?.length) showVideo(state.videos[0], location.hash === '#median' ? 6 : location.hash === '#tracks' ? 5 : 2);
+    if (state.videos?.length) showVideo(state.videos[0], location.hash === '#compression' ? 5 : 2);
   } catch (error) {
     showError(error.message);
   }
@@ -847,19 +610,8 @@ stepUpload.addEventListener('click', () => showStage(1));
 stepMotion.addEventListener('click', () => showStage(2));
 stepDepth.addEventListener('click', () => showStage(3));
 stepGaussians.addEventListener('click', () => showStage(4));
-stepTracks.addEventListener('click', () => showStage(5));
-nextTracksButton.addEventListener('click', () => showStage(5));
 runDepthButton.addEventListener('click', runDepth);
 runGaussiansButton.addEventListener('click', runGaussians);
-runTracksButton.addEventListener('click', runTracks);
-trackPlay.addEventListener('click', () => {
-  if (trackViewer) void trackViewer.toggle().catch(error => showError(error.message));
-});
-trackTimeline.addEventListener('input', () => {
-  if (!trackViewer) return;
-  trackViewer.stop();
-  void trackViewer.show(Number(trackTimeline.value)).catch(error => showError(error.message));
-});
 viewerPlay.addEventListener('click', () => {
   if (plyViewer) void plyViewer.toggle();
 });

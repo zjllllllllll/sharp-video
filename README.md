@@ -1,17 +1,19 @@
 # SHARP Video Workbench
 
-本地视频转动态高斯的实验工作台。主流程包含上传、机位检测、视频深度、逐帧 SHARP、生命周期高斯轨迹，以及全属性中值滤波。
+本地视频转动态高斯的实验工作台。主流程包含上传、机位检测、视频深度、逐帧 SHARP，以及高斯序列压缩打包与播放。
 
-仓库仅保存源码、配置、测试和上游引用，不包含输入视频、运行记录、生成结果、训练权重、预训练权重或安装环境。
+仓库仅保存源码、源码备份、配置、测试和上游引用，不包含输入视频、运行记录、生成结果、训练权重、预训练权重或安装环境。
 
 ## 代码结构
 
 | 路径 | 内容 |
 | --- | --- |
 | `workbench/server.mjs`、`workbench/static/` | 本地 HTTP 服务与浏览器播放器 |
-| `workbench/*_worker.py`、`workbench/gaussian_*.py` | 深度、高斯、轨迹与滤波处理 |
+| `workbench/*_worker.py`、`workbench/gaussian_*.py` | 深度、高斯与序列压缩处理 |
 | `workbench/tests/` | Python 与 Node 测试 |
 | `workbench/trajectory_codec/` | 每轨迹编码、共享属性解码器实验；尚未达到保真重建目标 |
+| `backups/` | 替换前的高斯轨迹与中值滤波源码备份，含逐文件 SHA-256 |
+| `workbench/static/compression/` | splats4D 编解码适配与整段 GPU 帧缓存播放器 |
 | `workbench/dynamic/` | 已停止的共享变形模型实验源码 |
 | `ml-sharp/`、`video-depth-anything/` | 主流程使用的上游项目子模块 |
 | `ml-depth-pro/`、`moge/`、`moge-utils3d/` | 深度对比实验的上游子模块 |
@@ -44,6 +46,9 @@ python -m venv .envs/video-depth-anything
 & .envs/video-depth-anything/Scripts/python.exe -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
 & .envs/video-depth-anything/Scripts/python.exe -m pip install -r workbench/requirements.txt
 
+python -m venv .envs/splats4d
+& .envs/splats4d/Scripts/python.exe -m pip install -r workbench/compression-requirements.txt
+
 npm --prefix workbench ci
 node workbench/server.mjs
 ```
@@ -60,7 +65,6 @@ node workbench/server.mjs
 | --- | --- |
 | [SHARP](https://github.com/apple-aiml-research/ml-sharp) | `ml-sharp/checkpoints/sharp_2572gikvuh.pt` |
 | [Metric Video Depth Anything Base](https://github.com/DepthAnything/Video-Depth-Anything) | `video-depth-anything/checkpoints/metric_video_depth_anything_vitb.pth` |
-| [torchvision RAFT Small C_T_V2](https://pytorch.org/vision/stable/models/generated/torchvision.models.optical_flow.raft_small.html) | `workbench/checkpoints/raft_small_C_T_V2-01064c6d.pth` |
 | MoGe-2（可选） | `moge/checkpoints/moge-2-vits-normal/model.pt` |
 | Depth Pro（可选） | `ml-depth-pro/checkpoints/depth_pro.pt` |
 
@@ -71,10 +75,11 @@ node workbench/server.mjs
 | `SHARP_VIDEO_PORT` | HTTP 端口，默认 8775 |
 | `SHARP_VIDEO_FFMPEG` | FFmpeg 命令或绝对路径，默认从 PATH 查找 |
 | `SHARP_VIDEO_CHECKPOINT` | SHARP 权重路径 |
-| `SHARP_VIDEO_SHARP_PYTHON` | SHARP / 轨迹处理 Python，默认 `.envs/sharp` |
+| `SHARP_VIDEO_SHARP_PYTHON` | SHARP Python，默认 `.envs/sharp` |
 | `SHARP_VIDEO_DEPTH_PYTHON` | 视频深度 Python，默认 `.envs/video-depth-anything` |
 | `SHARP_VIDEO_MOGE_PYTHON` | MoGe Python，默认 `.envs/moge2` |
 | `SHARP_VIDEO_DEPTH_PRO_PYTHON` | Depth Pro Python，默认 `.envs/depth-pro` |
+| `SHARP_VIDEO_COMPRESSION_PYTHON` | 压缩 Python，默认 `.envs/splats4d` |
 | `SHARP_VIDEO_DYNAMIC_PYTHON` | 训练实验 Python，默认 `.envs/dynamic` |
 
 输入和结果分别写入 `workbench/uploads/`、`workbench/runs/`。这些目录与模型、缓存、日志均已加入 `.gitignore`。
@@ -92,6 +97,6 @@ node --test workbench/tests/*.test.mjs
 
 ## 使用状态与许可
 
-这是研究和工程实验代码。轨迹编码实验的固定配置已运行过完整序列，但没有达到保真压缩目标；中值滤波也可能影响快速运动边缘。源码保留用于复现与后续研究。
+这是研究和工程实验代码。轨迹编码实验的固定配置已运行过完整序列，但没有达到保真压缩目标；原轨迹计算与中值滤波步骤已移除，源码快照保存在 `backups/gaussian-tracks-2026-10-20.zip`。
 
-各上游组件的许可证及适用限制以其仓库为准。`workbench/dynamic/upstream.py` 包含已注明来源的 Graphdeco / MoDGS 代码，`trajectory_codec/LICENSE.siren-pytorch` 保留 SIREN 实现的 MIT 许可。此仓库未为全部组合代码另行授予统一的开源许可。
+各上游组件的许可证及适用限制以其仓库为准。`workbench/dynamic/upstream.py` 包含已注明来源的 Graphdeco / MoDGS 代码，`trajectory_codec/LICENSE.siren-pytorch` 保留 SIREN 实现的 MIT 许可；`workbench/static/compression/` 保留 splats4D 和 fzstd 的 MIT 许可。此仓库未为全部组合代码另行授予统一的开源许可。

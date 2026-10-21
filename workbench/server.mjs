@@ -5,9 +5,11 @@ import {extname, join, relative, resolve} from 'node:path';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {codecJobs} from './trajectory-codec-jobs.mjs';
+import {compressionJobs} from './compression-jobs.mjs';
 
 const appDir = fileURLToPath(new URL('.', import.meta.url));
 const trajectoryCodec = codecJobs(appDir);
+const compression = compressionJobs(appDir);
 const staticDir = join(appDir, 'static');
 const uploadDir = join(appDir, 'uploads');
 const runsDir = join(appDir, 'runs');
@@ -21,9 +23,6 @@ const depthCheckpoint = join(depthRepo, 'checkpoints', 'metric_video_depth_anyth
 const sharpRepo = join(appDir, '..', 'ml-sharp');
 const sharpPython = process.env.SHARP_VIDEO_SHARP_PYTHON || environmentPython('sharp');
 const sharpWorker = join(appDir, 'gaussian_worker.py');
-const flowWorker = join(appDir, 'flow_worker.py');
-const lifecycleWorker = join(appDir, 'lifecycle_worker.py');
-const medianWorker = join(appDir, 'median_worker.py');
 const sharpCheckpoint = process.env.SHARP_VIDEO_CHECKPOINT || join(sharpRepo, 'checkpoints', 'sharp_2572gikvuh.pt');
 const mogeRepo = join(appDir, '..', 'moge');
 const mogePython = process.env.SHARP_VIDEO_MOGE_PYTHON || environmentPython('moge2');
@@ -45,8 +44,6 @@ const thresholds = Object.freeze({
 const analysisJobs = new Map();
 const depthJobs = new Map();
 const gaussianJobs = new Map();
-const trackJobs = new Map();
-const medianJobs = new Map();
 const experimentJobs = new Map();
 
 await mkdir(uploadDir, {recursive: true});
@@ -107,7 +104,7 @@ async function listVideos() {
       const analysis = await readAnalysis(entry.name);
       const depth = await readDepth(entry.name);
       const gaussians = await readGaussians(entry.name, depth);
-      const tracks = await readTracks(entry.name);
+      const tracks = await readLegacyTracks(entry.name);
       return {
         name: entry.name,
         size: info.size,
@@ -117,7 +114,7 @@ async function listVideos() {
         depth,
         gaussians,
         tracks,
-        median: await readMedian(entry.name),
+        compression: await compression.read(entry.name),
       };
     }));
   return files.sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
@@ -183,78 +180,14 @@ async function readGaussians(filename, depth = null) {
   });
 }
 
-async function readTracks(filename) {
+async function readLegacyTracks(filename) {
+  // Read-only metadata for the separate, already existing codec experiment.
   const runId = runIdFor(filename);
-  const job = trackJobs.get(filename);
-  let tracks = null;
-  let directory = 'tracks-lifecycle';
-  for (const candidate of ['tracks-lifecycle', 'tracks-animation', 'tracks-indexed', 'tracks']) {
-    try {
-      tracks = JSON.parse(await readFile(join(runsDir, runId, candidate, 'tracks.json'), 'utf8'));
-      directory = candidate;
-      break;
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-  }
-  if (job) {
-    if (tracks?.format !== 'sharp.gaussian_tracks.v5') tracks = job.initial;
-    tracks = {...tracks, status: job.status, stage: job.stage === 'flow' ? 'flow' : tracks?.stage || job.stage,
-      error: job.error || tracks?.error};
-    if (job.stage === 'flow') {
-      try {
-        const flow = JSON.parse(await readFile(join(runsDir, runId, 'flow', 'flow.json'), 'utf8'));
-        tracks.currentPair = flow.currentPair;
-        tracks.totalPairs = flow.totalPairs;
-      } catch (error) {
-        if (error.code !== 'ENOENT') throw error;
-      }
-    }
-  }
-  for (const spec of Object.values(tracks?.arrays || {})) {
-    spec.url = `/results/${runId}/${directory}/${spec.file}`;
-  }
-  if (tracks?.sourceFrames) tracks.sourceFrames = tracks.sourceFrames.map(frame => ({
-    ...frame, fullUrl: `/results/${runId}/gaussians/${frame.full}`
-  }));
-  if (tracks?.file) tracks.file.url = `/results/${runId}/${directory}/${tracks.file.file}`;
-  return tracks;
-}
-
-async function readMedian(filename) {
-  const runId = runIdFor(filename);
-  let state = medianJobs.get(filename)?.initial || null;
-  try { state = JSON.parse(await readFile(join(runsDir, runId, 'tracks-median', 'median.json'), 'utf8')); }
-  catch (error) { if (error.code !== 'ENOENT') throw error; }
-  if (state?.file) state.file.url = `/results/${runId}/tracks-median/${state.file.file}`;
-  return state;
-}
-
-async function startMedian(filename) {
-  const tracks = await readTracks(filename);
-  if (tracks?.status !== 'complete' || tracks.format !== 'sharp.gaussian_tracks.v5') {
-    throw new Error('请先完成第五步高斯轨迹');
-  }
-  const previous = await readMedian(filename);
-  if (previous?.status === 'complete' || medianJobs.has(filename)) return previous;
-  const runDir = join(runsDir, runIdFor(filename));
-  const outputDir = join(runDir, 'tracks-median');
-  await mkdir(outputDir, {recursive: true});
-  if (medianJobs.has(filename)) return readMedian(filename);
-  const initial = {status: 'running', stage: 'median', currentFrame: 0,
-    frameCount: tracks.frameCount, generatedAt: new Date().toISOString()};
-  const job = {initial};
-  medianJobs.set(filename, job);
-  job.promise = (async () => {
-    await writeFile(join(outputDir, 'median.json'), JSON.stringify(initial), 'utf8');
-    await runProcess(sharpPython, [medianWorker, '--run-dir', runDir], appDir);
-  })().catch(async error => {
-    const saved = await readMedian(filename).catch(() => initial);
-    const temporary = join(outputDir, 'median.failed.tmp');
-    await writeFile(temporary, JSON.stringify({...saved, status: 'failed', error: error.message}), 'utf8');
-    await rename(temporary, join(outputDir, 'median.json'));
-  }).finally(() => medianJobs.delete(filename));
-  return initial;
+  try {
+    const tracks = JSON.parse(await readFile(join(runsDir, runId, 'tracks-lifecycle', 'tracks.json'), 'utf8'));
+    if (tracks.file) tracks.file.url = `/results/${runId}/tracks-lifecycle/${tracks.file.file}`;
+    return tracks;
+  } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
 function decorateExperiment(filename, value) {
@@ -500,58 +433,6 @@ async function startGaussianGeneration(filename) {
   return readGaussians(filename, depth);
 }
 
-async function startTrackGeneration(filename) {
-  const gaussians = await readGaussians(filename);
-  if (gaussians?.status !== 'complete') throw new Error('请先完成逐帧高斯生成');
-  const existing = await readTracks(filename);
-  if ((existing?.status === 'complete' && existing.format === 'sharp.gaussian_tracks.v5') || trackJobs.has(filename)) return existing;
-
-  const runDir = join(runsDir, runIdFor(filename));
-  const outputDir = join(runDir, 'tracks-lifecycle');
-  await mkdir(outputDir, {recursive: true});
-  // Recheck after asynchronous reads so simultaneous clicks share one job.
-  if (trackJobs.has(filename)) return readTracks(filename);
-  const job = {status: 'running', stage: 'tracks', error: null};
-  trackJobs.set(filename, job);
-  job.promise = (async () => {
-    const starting = job.initial = {
-      format: 'sharp.gaussian_tracks.v5', positionEncoding: 'full_attribute_samples',
-      status: 'running', stage: 'tracks', currentFrame: 0, frameCount: gaussians.frames.length,
-      generatedAt: new Date().toISOString()
-    };
-    const temporary = join(outputDir, 'tracks.json.tmp');
-    await writeFile(temporary, JSON.stringify(starting, null, 2), 'utf8');
-    await rename(temporary, join(outputDir, 'tracks.json'));
-    let flow = null;
-    try { flow = JSON.parse(await readFile(join(runDir, 'flow', 'flow.json'), 'utf8')); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
-    if (flow?.status !== 'complete') {
-      job.stage = 'flow';
-      await runProcess(sharpPython, [flowWorker, '--run-dir', runDir], appDir);
-    }
-    job.stage = 'tracks';
-    await runProcess(sharpPython, [lifecycleWorker, '--run-dir', runDir], appDir);
-    job.status = 'complete';
-  })().catch(async error => {
-    job.status = 'failed';
-    job.error = error.message;
-    let previous = null;
-    try { previous = await readTracks(filename); } catch {}
-    const failed = {...previous, format: 'sharp.gaussian_tracks.v5', positionEncoding: 'full_attribute_samples',
-      status: 'failed', stage: job.stage, error: error.message};
-    try {
-      const temporary = join(outputDir, 'tracks.json.tmp');
-      await writeFile(temporary, JSON.stringify(failed, null, 2), 'utf8');
-      await rename(temporary, join(outputDir, 'tracks.json'));
-    } catch (saveError) {
-      console.error('无法保存轨迹失败状态：', saveError.message);
-    }
-  }).finally(() => {
-    if (trackJobs.get(filename) === job) trackJobs.delete(filename);
-  });
-  return readTracks(filename);
-}
-
 async function startDepthExperiment(filename) {
   const existing = await readExperiment(filename);
   if (existing?.status === 'complete') return existing;
@@ -775,25 +656,13 @@ const server = createServer(async (request, response) => {
       return;
     }
 
-    if (url.pathname === '/api/tracks' && request.method === 'POST') {
+    if (url.pathname === '/api/compression' && request.method === 'POST') {
       const body = await readJson(request);
-      json(response, 202, {tracks: await startTrackGeneration(safeName(body.filename))});
+      json(response, 202, {compression: await compression.start(safeName(body.filename))});
       return;
     }
-
-    if (url.pathname === '/api/tracks' && request.method === 'GET') {
-      json(response, 200, {tracks: await readTracks(safeName(url.searchParams.get('filename')))});
-      return;
-    }
-
-    if (url.pathname === '/api/median' && request.method === 'POST') {
-      const body = await readJson(request);
-      json(response, 202, {median: await startMedian(safeName(body.filename))});
-      return;
-    }
-
-    if (url.pathname === '/api/median' && request.method === 'GET') {
-      json(response, 200, {median: await readMedian(safeName(url.searchParams.get('filename')))});
+    if (url.pathname === '/api/compression' && request.method === 'GET') {
+      json(response, 200, {compression: await compression.read(safeName(url.searchParams.get('filename')))});
       return;
     }
 
@@ -842,13 +711,10 @@ const server = createServer(async (request, response) => {
       } else if (parts.length === 4 && parts[2] === 'gaussians' &&
                  /^frame_\d{5}(?:_preview)?\.ply$/.test(parts[3])) {
         path = join(runsDir, safeName(parts[1]), 'gaussians', parts[3]);
-      } else if (parts.length === 4 && parts[2] === 'tracks' &&
-                 /^(?:ids|times|reference|uv|positions|displacements|valid)\.npy$/.test(parts[3])) {
-        path = join(runsDir, safeName(parts[1]), 'tracks', parts[3]);
-      } else if (parts.length === 4 && parts[2] === 'tracks-indexed' &&
-                 /^(?:source_cell_indices|times)\.npy$/.test(parts[3])) {
-        path = join(runsDir, safeName(parts[1]), 'tracks-indexed', parts[3]);
-      } else if (parts.length === 4 && ['tracks-animation', 'tracks-lifecycle', 'tracks-median'].includes(parts[2]) && parts[3] === 'animation.4dgs') {
+      } else if (parts.length === 4 && parts[2] === 'compressed' &&
+                 ['sequence.splat4d', 'encoder-report.json'].includes(parts[3])) {
+        path = join(runsDir, safeName(parts[1]), 'compressed', parts[3]);
+      } else if (parts.length === 4 && parts[2] === 'tracks-lifecycle' && parts[3] === 'animation.4dgs') {
         path = join(runsDir, safeName(parts[1]), parts[2], parts[3]);
       } else if (parts.length === 4 && parts[2] === 'trajectory-codec' &&
                  ['trajectory-codec.pt', 'animation.4dgs', 'report.json'].includes(parts[3])) {
@@ -874,9 +740,8 @@ const server = createServer(async (request, response) => {
       return;
     }
 
-    if (request.method === 'GET' && url.pathname === '/tracks.html') {
-      response.writeHead(302, {Location: '/#tracks', 'Cache-Control': 'no-store'});
-      response.end();
+    if (url.pathname.startsWith('/api/')) {
+      json(response, 404, {error: 'not found'});
       return;
     }
 

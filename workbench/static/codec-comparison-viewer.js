@@ -1,9 +1,9 @@
 import {SplatMesh} from '@sparkjsdev/spark';
-import {TrackSequenceViewer} from './track-viewer.js';
+import {CodecSequenceViewer} from './codec-viewer.js';
 import {AnimationPreparation} from './prepared-animation.js';
 
 // One camera and timeline; both variants stay prepared for immediate A/B switching.
-export class MedianComparisonViewer extends TrackSequenceViewer {
+export class CodecComparisonViewer extends CodecSequenceViewer {
   async loadPair(original, filtered) {
     this.stop();
     this.clearMeshes();

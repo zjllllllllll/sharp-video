@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from gaussian_lifecycle import read_lifecycle_animation
+from .legacy_format import read_lifecycle_animation
 from .data import prepare, epoch_batches, batches_per_epoch
 from .model import AttributeDecoder, FORMAT, GROUPS, default_config, group_losses, physical_attributes, load_package
 from .state import State, atomic_torch_save

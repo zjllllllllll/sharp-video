@@ -2,7 +2,7 @@
 import numpy as np
 import torch
 
-from gaussian_lifecycle import read_lifecycle_animation
+from .legacy_format import read_lifecycle_animation
 from .model import STANDARD_COLUMNS, local_times
 
 

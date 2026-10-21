@@ -4,7 +4,7 @@ import {PackedSplats} from '@sparkjsdev/spark';
 import {Vector3, Quaternion, Color, Group, PerspectiveCamera} from 'three';
 import {ANIMATION_COLUMNS, ANIMATION_FORMAT, LIFECYCLE_FORMAT, readAnimationHeader, readAnimationFrame} from '../static/animation-file.js';
 import {applyAnimationFrame} from '../static/animation-splats.js';
-import {TrackSequenceViewer} from '../static/track-viewer.js';
+import {CodecSequenceViewer} from '../static/codec-viewer.js';
 
 test('single-file reader uses embedded metadata and supports offsets beyond 4 GiB', async () => {
   const header = {format: ANIMATION_FORMAT, dtype: '<f4', columns: ANIMATION_COLUMNS,
@@ -93,7 +93,7 @@ test(`${format}: viewer reads only the file and reuses one mesh (no WebGL or bro
     return {status: 206, arrayBuffer: async () => bytes.slice(Number(from), Number(to) + 1).buffer};
   };
   // Bypass the DOM/WebGL constructor. Exercise only file loading and CPU data.
-  const viewer = Object.create(TrackSequenceViewer.prototype);
+  const viewer = Object.create(CodecSequenceViewer.prototype);
   viewer.root = new Group();
   viewer.camera = new PerspectiveCamera();
   viewer.onPlayback = viewer.onFrame = () => {};

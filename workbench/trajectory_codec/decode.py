@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gaussian_animation import write_header
+from .legacy_format import write_header
 from .model import load_package, local_times, physical_attributes
 from .state import State, atomic_json
 
