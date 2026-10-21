@@ -2,7 +2,7 @@
 
 本地视频转动态高斯的实验工作台。主流程包含上传、机位检测、视频深度、逐帧 SHARP，以及高斯序列压缩打包与播放。
 
-仓库仅保存源码、源码备份、配置、测试和上游引用，不包含输入视频、运行记录、生成结果、训练权重、预训练权重或安装环境。
+仓库仅保存源码、源码备份、配置、测试和依赖版本清单，不包含输入视频、运行记录、生成结果、训练权重、预训练权重或安装环境。
 
 ## 代码结构
 
@@ -15,18 +15,18 @@
 | `backups/` | 替换前的高斯轨迹与中值滤波源码备份，含逐文件 SHA-256 |
 | `workbench/static/compression/` | splats4D 编解码适配与整段 GPU 帧缓存播放器 |
 | `workbench/dynamic/` | 已停止的共享变形模型实验源码 |
-| `ml-sharp/`、`video-depth-anything/` | 主流程使用的上游项目子模块 |
-| `ml-depth-pro/`、`moge/`、`moge-utils3d/` | 深度对比实验的上游子模块 |
-| `workbench/third_party/` | 历史实验引用的 MoDGS、OmniMotion 子模块 |
+| `ml-sharp/`、`video-depth-anything/` | 模型推理上游源码 |
+| `ml-depth-pro/`、`moge/`、`moge-utils3d/` | 深度对比实验的上游源码 |
+| `workbench/third_party/` | MoDGS、OmniMotion、RAFT、DINO、pipeline 与 splats4D 上游源码 |
 
 ## 获取源码
 
 ```sh
-git clone --recurse-submodules https://github.com/zjllllllllll/sharp-video.git
+git clone https://github.com/zjllllllllll/sharp-video.git
 cd sharp-video
 ```
 
-已有普通克隆可运行 `git submodule update --init --recursive`。子模块固定在本项目使用的提交，各自保留原许可证。
+上游源码已作为普通文件纳入本仓库，无须初始化子模块。来源、固定提交、完整依赖清单和安装说明见 [dependencies/README.md](dependencies/README.md)。各目录保留原许可证。
 
 ## 安装和运行
 
@@ -39,12 +39,13 @@ Windows PowerShell 示例（在仓库根目录）：
 ```powershell
 python -m venv .envs/sharp
 & .envs/sharp/Scripts/python.exe -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
-& .envs/sharp/Scripts/python.exe -m pip install -e ./ml-sharp
-& .envs/sharp/Scripts/python.exe -m pip install -r workbench/requirements.txt
+& .envs/sharp/Scripts/python.exe -m pip install -r dependencies/python-main.lock.txt
+& .envs/sharp/Scripts/python.exe -m pip install --no-deps -e ./ml-sharp
+python download_sharp_weights.py
 
 python -m venv .envs/video-depth-anything
 & .envs/video-depth-anything/Scripts/python.exe -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
-& .envs/video-depth-anything/Scripts/python.exe -m pip install -r workbench/requirements.txt
+& .envs/video-depth-anything/Scripts/python.exe -m pip install -r dependencies/python-main.lock.txt
 
 python -m venv .envs/splats4d
 & .envs/splats4d/Scripts/python.exe -m pip install -r workbench/compression-requirements.txt

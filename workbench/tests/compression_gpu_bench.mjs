@@ -3,16 +3,14 @@
 import {Worker} from 'node:worker_threads';
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath, pathToFileURL} from 'node:url';
 import {SplatRenderer} from '../static/compression/renderer.js';
 import {getProjectionMatrix, multiply4, viewMatrixFromHint} from '../static/compression/camera.js';
 import {FrameClock} from '../static/compression/frame-clock.js';
+import {create, globals} from 'webgpu';
 
-const appDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = process.argv.slice(2);
 const file = path.resolve(args[0]);
 const output = path.resolve(args[1]);
-const {create, globals} = await import(pathToFileURL(path.join(appDir, '../.cache/splats4d-runtime/node_modules/webgpu/index.js')));
 Object.assign(globalThis, globals);
 const gpu = create([]);
 Object.defineProperty(globalThis.navigator, 'gpu', {value: gpu, configurable: true});

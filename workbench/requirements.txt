@@ -1,4 +1,5 @@
 # Install the GPU-matched torch / torchvision builds separately first.
+-c ../dependencies/python-main.lock.txt
 numpy
 scipy
 Pillow

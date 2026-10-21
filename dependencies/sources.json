@@ -1,0 +1,122 @@
+{
+  "description": "Vendored upstream source snapshots; original licenses retained.",
+  "sources": [
+    {
+      "path": "ml-sharp",
+      "repository": "https://github.com/apple-aiml-research/ml-sharp",
+      "revision": "aed6527499ef91cba3b54c18d49a870f25947190"
+    },
+    {
+      "path": "video-depth-anything",
+      "repository": "https://github.com/DepthAnything/Video-Depth-Anything",
+      "revision": "4f5ae23172ba60fd7bc11ef671cca678842c7072"
+    },
+    {
+      "path": "ml-depth-pro",
+      "repository": "https://github.com/apple-aiml-research/ml-depth-pro",
+      "revision": "9e65e4dbe9568d23c546fcec53302b10445e109e"
+    },
+    {
+      "path": "moge",
+      "repository": "https://github.com/microsoft/MoGe",
+      "revision": "b942f00bdc2a2a23ebb474fbe034d487e6dcceec"
+    },
+    {
+      "path": "moge-utils3d",
+      "repository": "https://github.com/EasternJournalist/utils3d",
+      "revision": "3fab839f0be9931dac7c8488eb0e1600c236e183"
+    },
+    {
+      "path": "workbench/third_party/MoDGS",
+      "repository": "https://github.com/Mobiuslqm/MoDGS",
+      "revision": "f586bc41bef5539b64cb3a397634725eb0d4db97"
+    },
+    {
+      "path": "workbench/third_party/omnimotion",
+      "repository": "https://github.com/qianqianwang68/omnimotion",
+      "revision": "43868e5d214b795f00c586b790cb832a6f571a4d"
+    },
+    {
+      "path": "workbench/third_party/omnimotion/preprocessing/dino",
+      "repository": "https://github.com/facebookresearch/dino",
+      "revision": "7c446df5b9f45747937fb0d72314eb9f7b66930a"
+    },
+    {
+      "path": "workbench/third_party/omnimotion/preprocessing/RAFT",
+      "repository": "https://github.com/princeton-vl/RAFT",
+      "revision": "3fa0bb0a9c633ea0a9bb8a79c576b6785d4e6a02",
+      "archiveSha256": "db1ac057b7fc177f294cdd331858e975d816724764e3541c7dda0270978bbd00"
+    },
+    {
+      "path": "workbench/third_party/pipeline",
+      "repository": "https://github.com/EasternJournalist/pipeline",
+      "revision": "866f059d2a05cde05e4a52211ec5051fd5f276d6",
+      "archiveSha256": "36e2fc484c98ff4b9e007457ab45b71009434e9834992336bd2efda22f532523"
+    },
+    {
+      "path": "workbench/third_party/splats4d",
+      "repository": "https://github.com/adamraudonis/splats4D",
+      "revision": "bf7c41ac2ef59a311899887bd7e032239b819829",
+      "archiveSha256": "3196ad0b9de0c8d5f53efc7e7b4052efe22b9394d99de26392a91cbddfaf674d"
+    }
+  ],
+  "excludedDataFiles": [
+    "video-depth-anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "video-depth-anything/assets/example_videos/davis_rollercoaster.mp4",
+    "workbench/third_party/MoDGS/arguments/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/dataloader/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/dataloader/__pycache__/timePcdTable_dataset.cpython-39.pyc",
+    "workbench/third_party/MoDGS/gaussian_renderer/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/gaussian_renderer/__pycache__/network_gui.cpython-39.pyc",
+    "workbench/third_party/MoDGS/model/__pycache__/RealNVP.cpython-39.pyc",
+    "workbench/third_party/MoDGS/model/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/model/__pycache__/mfn.cpython-39.pyc",
+    "workbench/third_party/MoDGS/model/__pycache__/neuralsceneflowprior.cpython-39.pyc",
+    "workbench/third_party/MoDGS/model/__pycache__/pe_relu.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/PointTrack_gaussian_model.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/cameras.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/colmap_loader.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/dataset_readers.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/gaussian_model.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/hyper_camera.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/iso_gaussian_model.cpython-39.pyc",
+    "workbench/third_party/MoDGS/scene/__pycache__/original_gaussian_model.cpython-39.pyc",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/assets/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/geowizard/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/geowizard/input/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/geowizard/models/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/GeoWizard/geowizard/utils/.DS_Store",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.0/alex.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.0/squeeze.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.0/vgg.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.1/alex.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.1/squeeze.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_exp/models/weights/v0.1/vgg.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_scripts/models/raft-chairs.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_scripts/models/raft-kitti.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_scripts/models/raft-sintel.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_scripts/models/raft-small.pth",
+    "workbench/third_party/MoDGS/submodules/Neural-Scene-Flow-Fields/nsff_scripts/models/raft-things.pth",
+    "workbench/third_party/MoDGS/utils/__pycache__/__init__.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/camera_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/flow_viz.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/gaussian_training_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/general_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/graphics_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/image_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/loss_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/pearson_coeff.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/render_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/sh_utils.cpython-39.pyc",
+    "workbench/third_party/MoDGS/utils/__pycache__/system_utils.cpython-39.pyc",
+    "workbench/third_party/splats4d/docs/demo/flame.splat4d",
+    "workbench/third_party/splats4d/docs/demo/hero.splat4d"
+  ],
+  "adaptations": [
+    "Git submodule registrations and nested .git metadata are not included; source files are tracked directly.",
+    "Upstream sample videos, Gaussian scenes, checkpoints and generated arrays are excluded.",
+    "moge/pyproject.toml: utils3d and pipeline use the versions of the included local packages, instead of Git URLs."
+  ]
+}

@@ -1,0 +1,4 @@
+# Independent, CPU-only PLY packing and native splats4D encoder environment.
+numpy==2.5.2
+plyfile==1.1.2
+splats4d==0.1.0

@@ -9,5 +9,8 @@
   "dependencies": {
     "@sparkjsdev/spark": "2.2.0",
     "three": "0.180.0"
+  },
+  "devDependencies": {
+    "webgpu": "0.6.2"
   }
 }

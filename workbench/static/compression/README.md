@@ -27,4 +27,5 @@ encoder error bounds are relative to that input, not the original FP32 PLY.
 
 `tests/compression_gpu_bench.mjs` runs the production worker and renderer using
 native Dawn WebGPU, without opening a webpage or inspecting any rendered image.
-Its optional Node `webgpu` package is for performance checks, not browser playback.
+Its optional Node `webgpu` package is declared in the workbench devDependencies
+and installed with `npm ci`; it is for performance checks, not browser playback.

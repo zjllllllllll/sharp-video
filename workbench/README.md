@@ -72,4 +72,4 @@ node --test workbench/tests/*.test.mjs
 
 `tests/compression_gpu_bench.mjs` 使用原生 Dawn WebGPU，直接读取最终文件，运行生产解码器、
 完整 GPU 帧缓存与 1280×720 绘制性能检查；不打开网页、不截图。
-其可选测试依赖安装在根目录 `.cache/splats4d-runtime`，与浏览器依赖分开。
+其可选测试依赖 `webgpu==0.6.2` 已加入 `package.json` 的 devDependencies，由 `npm ci` 安装。

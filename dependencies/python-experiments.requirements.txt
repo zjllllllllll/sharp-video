@@ -1,0 +1,4 @@
+# Optional project-owned dynamic / trajectory-codec experiments.
+# Use the same CUDA 12.8 runtime versions as the main workbench.
+-r python-main.lock.txt
+siren-pytorch==0.1.7
